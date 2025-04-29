@@ -4,7 +4,7 @@ RoomieMatcher is a Java-based Spring Boot web application that helps tenants fin
 
 ---
 
-## 🚀 Features
+##  Features
 - Match score calculation using a custom algorithm
 - Preloaded tenant data via `data.sql`
 - REST API endpoints
@@ -14,7 +14,7 @@ RoomieMatcher is a Java-based Spring Boot web application that helps tenants fin
 
 ---
 
-## ✅ Technologies Used
+##  Technologies Used
 - Java 17
 - Spring Boot
 - Spring Data JPA
@@ -24,7 +24,7 @@ RoomieMatcher is a Java-based Spring Boot web application that helps tenants fin
 
 ---
 
-## ⚙️ Prerequisites
+##  Prerequisites
 Install the following:
 - Java JDK 17+
 - Maven
@@ -33,7 +33,7 @@ Install the following:
 
 ---
 
-## 📥 Clone the Repository
+##  Clone the Repository
 ```bash
 git clone https://github.com/<your-username>/roomiematcher.git
 cd roomiematcher
@@ -41,7 +41,7 @@ cd roomiematcher
 
 ---
 
-## 🛠️ Configure Database
+##  Configure Database
 1. Create a database in PostgreSQL:
 ```sql
 CREATE DATABASE roomiematcher_db;
@@ -84,20 +84,20 @@ http://localhost:8080/api/roommates/match/1/2
 
 ---
 
-## 🧪 Sample Data
+##  Sample Data
 See `src/main/resources/data.sql` for preloaded users.
 You can modify this to add more tenants.
 
 ---
 
-## 📌 Java OOP Concepts Demonstrated
+## Java OOP Concepts Demonstrated
 - **Inheritance**: `Tenant` inherits from `User`
 - **Interfaces**: `MatchingAlgorithm` is implemented by `BasicMatching`
 - **Thread**: Background data cleaning simulated in `RoommateService`
 
 ---
 
-## 📄 License
+##  License
 This project is for educational use.
 
 ---
