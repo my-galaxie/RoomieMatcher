@@ -94,7 +94,7 @@ You can modify this to add more tenants.
 - **Inheritance**: `Tenant` inherits from `User`
 - **Interfaces**: `MatchingAlgorithm` is implemented by `BasicMatching`
 - **Thread**: Background data cleaning simulated in `RoommateService`
-
+- **REST API**: To test end points
 ---
 
 ##  License
