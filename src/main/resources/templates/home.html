@@ -1,66 +1,317 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>RoomieMatcher - Home</title>
-    <link 
-      rel="stylesheet" 
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomieMatcher - Find Your Perfect Roommate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
-<body class="bg-light">
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand" href="#">RoomieMatcher</a>
-    </div>
-</nav>
-
-<div class="container mt-4">
-    <h2 class="text-center mb-4">RoomieMatcher----Find your perfect roommate!</h2>
-
-    <!-- Section 1: Main Tenant Info -->
-    <div th:if="${mainTenant != null}">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h4 class="card-title text-primary" th:text="${mainTenant.name}">Main Tenant Name</h4>
-                <p class="card-text">
-                    Email: <span th:text="${mainTenant.email}">main@example.com</span><br>
-                    Budget: <span th:text="${mainTenant.budget}">10000</span><br>
-                    Location: <span th:text="${mainTenant.location}">New York</span><br>
-                </p>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">RoomieMatcher</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/matches">Matches</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/preferences">Preferences</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="nav-link btn btn-link" style="display: inline; border: none; background: none; padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x); color: rgba(255,255,255,.75);">Logout</button>
+                        </form>
+                    </li>
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" href="/register">Sign Up</a>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-    <div th:if="${mainTenant == null}">
-        <p class="text-danger">No main tenant with ID=1 found. Displaying all tenants with no scores.</p>
-    </div>
+    </nav>
 
-    <!-- Section 2: Other Tenants + Score -->
-    <h3 class="text-success">All Tenants</h3>
-    <div class="row">
-        <div class="col-md-6 mb-3" th:each="t : ${tenants}">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-primary" th:text="${t.name}">Tenant Name</h5>
-                    <p class="card-text">
-                        Email: <span th:text="${t.email}"></span><br>
-                        Budget: <span th:text="${t.budget}"></span><br>
-                        Location: <span th:text="${t.location}"></span><br>
-                    </p>
-                    <button class="btn btn-info">
-                        Score: <span th:text="${t.score}">0</span>
-                    </button>
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Find Your Perfect Roommate</h1>
+            <p class="lead mb-5">RoomieMatcher uses AI-powered matching to connect you with compatible roommates based on your lifestyle, budget, and preferences.</p>
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <a href="/register" class="btn btn-light btn-lg px-4 gap-3">Get Started</a>
+                <a href="#about" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card p-4">
+                        <div class="text-center">
+                            <i class="bi bi-people-fill feature-icon"></i>
+                            <h3>Smart Matching</h3>
+                            <p>Our algorithm finds roommates with compatible lifestyles, budgets, and preferences.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card p-4">
+                        <div class="text-center">
+                            <i class="bi bi-shield-check feature-icon"></i>
+                            <h3>Verified Profiles</h3>
+                            <p>All users verify their email to ensure you're connecting with real people.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card p-4">
+                        <div class="text-center">
+                            <i class="bi bi-geo-alt-fill feature-icon"></i>
+                            <h3>Location-Based</h3>
+                            <p>Find roommates in your preferred city or neighborhood.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<footer class="bg-primary text-white text-center p-3 mt-5">
-    <span>RoomieMatcher © 2025 | Find Your Perfect Roommate</span>
-</footer>
+    <!-- About Us Section -->
+    <section class="py-5 bg-light" id="about">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="section-title">About Us</h2>
+                    <p>RoomieMatcher was created to solve the challenge of finding compatible roommates in today's fast-paced world. Our platform uses advanced matching algorithms to connect people based on their lifestyle preferences, budget constraints, and location needs.</p>
+                    <p>We understand that finding the right roommate is about more than just splitting rent—it's about finding someone you can live with harmoniously. That's why our matching system considers factors like cleanliness habits, noise tolerance, and even gender preferences.</p>
+                    <p>Our mission is to make the roommate-finding process stress-free and efficient, helping you connect with people who share your living style and preferences.</p>
+                    <div class="d-flex mt-4">
+                        <div class="me-4">
+                            <h3 class="h5">1000+</h3>
+                            <p class="text-muted">Happy Users</p>
+                        </div>
+                        <div class="me-4">
+                            <h3 class="h5">500+</h3>
+                            <p class="text-muted">Successful Matches</p>
+                        </div>
+                        <div>
+                            <h3 class="h5">10+</h3>
+                            <p class="text-muted">Cities Covered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-img">
+                        <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80" alt="Happy roommates" class="img-fluid rounded">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Testimonials Section -->
+    <section class="py-5" id="testimonials">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">What Our Users Say</h2>
+            <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- Dynamic testimonials from database -->
+                    <div th:each="testimonial, iterStat : ${testimonials}" th:classappend="${iterStat.index == 0} ? 'active'" class="carousel-item">
+                        <div class="testimonial-card p-4 mx-auto" style="max-width: 700px;">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <img th:src="@{'https://i.pravatar.cc/150?u=' + ${testimonial.authorName}}" alt="User" class="testimonial-img mb-3">
+                                <div>
+                                    <h5 class="mb-1" th:text="${testimonial.authorName}">User Name</h5>
+                                    <div class="rating mb-2">
+                                        <i class="bi bi-star-fill" th:each="i : ${#numbers.sequence(1, testimonial.rating)}"></i>
+                                        <i class="bi bi-star" th:each="i : ${#numbers.sequence(1, 5 - testimonial.rating)}"></i>
+                                    </div>
+                                </div>
+                                <p class="mb-0 fst-italic">" <span th:text="${testimonial.content}">Testimonial content goes here.</span> "</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fallback/Sample testimonials if none in database -->
+                    <div th:if="${testimonials == null || testimonials.isEmpty()}" class="carousel-item active">
+                        <div class="testimonial-card p-4 mx-auto" style="max-width: 700px;">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <img src="https://i.pravatar.cc/150?u=RahulMehta" alt="User" class="testimonial-img mb-3">
+                                <div>
+                                    <h5 class="mb-1">Rahul Mehta</h5>
+                                    <div class="rating mb-2">
+                                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="mb-0 fst-italic">"RoomieMatcher helped me find the perfect roommate in just a week! We have similar cleanliness habits and both love quiet evenings. Couldn't be happier with my living situation now."</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${testimonials == null || testimonials.isEmpty()}" class="carousel-item">
+                        <div class="testimonial-card p-4 mx-auto" style="max-width: 700px;">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <img src="https://i.pravatar.cc/150?u=AnjaliDesai" alt="User" class="testimonial-img mb-3">
+                                <div>
+                                    <h5 class="mb-1">Anjali Desai</h5>
+                                    <div class="rating mb-2">
+                                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="mb-0 fst-italic">"After struggling to find a compatible roommate for months, RoomieMatcher matched me with someone who has the same budget and lifestyle preferences. The gender preference filter was especially helpful!"</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${testimonials == null || testimonials.isEmpty()}" class="carousel-item">
+                        <div class="testimonial-card p-4 mx-auto" style="max-width: 700px;">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <img src="https://i.pravatar.cc/150?u=KaranSharma" alt="User" class="testimonial-img mb-3">
+                                <div>
+                                    <h5 class="mb-1">Karan Sharma</h5>
+                                    <div class="rating mb-2">
+                                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                    </div>
+                                </div>
+                                <p class="mb-0 fst-italic">"The location-based matching was spot on! Found a roommate in my preferred neighborhood who also shares my interest in cooking. The preference filters made the search so much easier."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Us Section -->
+    <section class="py-5 bg-light" id="contact">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">Contact Us</h2>
+            <div class="row">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="name" placeholder="Enter your name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="subject" placeholder="Enter subject">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" rows="5" placeholder="Enter your message"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                    <div class="contact-info">
+                        <h4 class="mb-4">Get in Touch</h4>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-geo-alt-fill contact-icon"></i>
+                            <div>
+                                <h5 class="h6 mb-0">Address</h5>
+                                <p class="mb-0">123 Tech Park, Bangalore, India</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-envelope-fill contact-icon"></i>
+                            <div>
+                                <h5 class="h6 mb-0">Email</h5>
+                                <p class="mb-0">support@roomiematcher.com</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-telephone-fill contact-icon"></i>
+                            <div>
+                                <h5 class="h6 mb-0">Phone</h5>
+                                <p class="mb-0">+91 9876543210</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clock-fill contact-icon"></i>
+                            <div>
+                                <h5 class="h6 mb-0">Working Hours</h5>
+                                <p class="mb-0">Monday - Friday: 9am - 5pm</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>RoomieMatcher</h5>
+                    <p class="mb-0">Finding compatible roommates made easy.</p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-decoration-none text-white">Home</a></li>
+                        <li><a href="#about" class="text-decoration-none text-white">About Us</a></li>
+                        <li><a href="#testimonials" class="text-decoration-none text-white">Testimonials</a></li>
+                        <li><a href="#contact" class="text-decoration-none text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <div class="d-flex">
+                        <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white me-3"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2023 RoomieMatcher. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">Privacy Policy | Terms of Service</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
 </body>
 </html>

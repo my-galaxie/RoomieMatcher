@@ -1,6 +1,7 @@
 package com.roomiematcher.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users") // Use "users" instead of "user" to avoid reserved keyword issues in PostgreSQL
@@ -12,9 +13,34 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+    
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = false;
+    
+    @Column(name = "verification_code")
+    private String verificationCode;
+    
+    @Column(name = "verification_expiry")
+    private LocalDateTime verificationExpiry;
+    
+    @Column(name = "gender")
+    private String gender;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     // No-args constructor required by JPA
     public User() {}
@@ -29,6 +55,10 @@ public class User {
     // Getters and Setters
     public Long getId() { 
         return id; 
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() { 
@@ -53,5 +83,45 @@ public class User {
 
     public void setPassword(String password) { 
         this.password = password; 
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public Boolean getIsActive() {
+        return isActive;
+    }
+    
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+    
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+    
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+    
+    public LocalDateTime getVerificationExpiry() {
+        return verificationExpiry;
+    }
+    
+    public void setVerificationExpiry(LocalDateTime verificationExpiry) {
+        this.verificationExpiry = verificationExpiry;
+    }
+    
+    public String getGender() {
+        return gender;
+    }
+    
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 }

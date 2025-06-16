@@ -1,24 +1,47 @@
--- Delete existing data to prevent duplicates
-DELETE FROM users;
+-- Insert sample tenants with different preferences only if they don't exist
+INSERT INTO users (name, email, password, role, budget, location, smoking, pets, cleanliness_level, noise_tolerance, gender, is_active)
+SELECT 'Amit Sharma', 'amit.sharma@example.com', '$2a$10$rYMqPxp8JJm1xvVNPmJrAOSQWbKiYRZUESBnHDx/IKD3ZVQgbVp.e', 'TENANT', 15000, 'Bangalore', FALSE, TRUE, 4, 3, 'Male', TRUE
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'amit.sharma@example.com');
 
--- Insert sample tenants with different preferences
--- Delete existing data to prevent duplicates
-DELETE FROM users;
+INSERT INTO users (name, email, password, role, budget, location, smoking, pets, cleanliness_level, noise_tolerance, gender, is_active)
+SELECT 'Neha Verma', 'neha.verma@example.com', '$2a$10$rYMqPxp8JJm1xvVNPmJrAOSQWbKiYRZUESBnHDx/IKD3ZVQgbVp.e', 'TENANT', 18000, 'Mumbai', TRUE, FALSE, 5, 2, 'Female', TRUE
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'neha.verma@example.com');
 
--- Insert sample tenants with low compatibility to the main tenant (ID=1)
-INSERT INTO users (id, name, email, password, role, budget, location, smoking, pets, cleanliness_level, noise_tolerance) VALUES
-(1, 'Amit Sharma', 'amit.sharma@example.com', 'password123', 'TENANT', 15000, 'Bangalore', FALSE, TRUE, 4, 3),
-(2, 'Neha Verma', 'neha.verma@example.com', 'securepass', 'TENANT', 18000, 'Mumbai', TRUE, FALSE, 5, 2),
-(3, 'Rohan Iyer', 'rohan.iyer@example.com', 'rohanpass', 'TENANT', 14000, 'Pune', FALSE, FALSE, 3, 4),
-(4, 'Priya Das', 'priya.das@example.com', 'priya789', 'TENANT', 20000, 'Delhi', TRUE, TRUE, 4, 3),
-(5, 'Vikas Nair', 'vikas.nair@example.com', 'vikaspass', 'TENANT', 17000, 'Hyderabad', FALSE, FALSE, 5, 2),
-(6, 'Ananya Reddy', 'ananya.reddy@example.com', 'ananyapass', 'TENANT', 16000, 'Chennai', TRUE, TRUE, 3, 4),
-(7, 'Rajesh Kulkarni', 'rajesh.kulkarni@example.com', 'kulkarni@123', 'TENANT', 19000, 'Pune', FALSE, TRUE, 4, 3),
-(8, 'Sneha Patil', 'sneha.patil@example.com', 'snehapatil', 'TENANT', 21000, 'Mumbai', TRUE, FALSE, 5, 2),
-(9, 'Arjun Mehta', 'arjun.mehta@example.com', 'arjun@456', 'TENANT', 15500, 'Delhi', FALSE, FALSE, 3, 4),
-(10, 'Kavya Rao', 'kavya.rao@example.com', 'kavya321', 'TENANT', 17500, 'Bangalore', TRUE, TRUE, 4, 3),
-(11, 'Manoj Gupta', 'manoj.gupta@example.com', 'manoj@789', 'TENANT', 14500, 'Chennai', FALSE, FALSE, 4, 3),
-(12, 'Pooja Singh', 'pooja.singh@example.com', 'pooja@123', 'TENANT', 19500, 'Hyderabad', TRUE, TRUE, 5, 2),
-(13, 'Aditya Joshi', 'aditya.joshi@example.com', 'adityajoshi', 'TENANT', 18500, 'Bangalore', FALSE, TRUE, 3, 4),
-(14, 'Meera Krishnan', 'meera.krishnan@example.com', 'meerak', 'TENANT', 16500, 'Pune', TRUE, FALSE, 4, 3),
-(15, 'Sandeep Chatterjee', 'sandeep.chatterjee@example.com', 'sandeepc', 'TENANT', 22000, 'Mumbai', FALSE, TRUE, 5, 2);
+-- Insert sample users with encrypted passwords (password is 'password') only if they don't exist
+INSERT INTO users (name, email, password, role, budget, location, cleanliness_level, noise_tolerance, smoking, pets, gender, is_active)
+SELECT 'John Doe', 'john@example.com', '$2a$10$rYMqPxp8JJm1xvVNPmJrAOSQWbKiYRZUESBnHDx/IKD3ZVQgbVp.e', 'TENANT', 15000, 'Bangalore', 4, 3, false, true, 'Male', TRUE
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'john@example.com');
+
+INSERT INTO users (name, email, password, role, budget, location, cleanliness_level, noise_tolerance, smoking, pets, gender, is_active)
+SELECT 'Jane Smith', 'jane@example.com', '$2a$10$rYMqPxp8JJm1xvVNPmJrAOSQWbKiYRZUESBnHDx/IKD3ZVQgbVp.e', 'TENANT', 18000, 'Bangalore', 5, 2, false, false, 'Female', TRUE
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'jane@example.com');
+
+-- Insert preferred genders for tenants only if they don't exist
+INSERT INTO tenant_preferred_genders (tenant_id, preferred_gender)
+SELECT u.id, 'Male'
+FROM users u
+WHERE u.email = 'neha.verma@example.com'
+AND NOT EXISTS (
+    SELECT 1 FROM tenant_preferred_genders tpg 
+    WHERE tpg.tenant_id = u.id AND tpg.preferred_gender = 'Male'
+);
+
+INSERT INTO tenant_preferred_genders (tenant_id, preferred_gender)
+SELECT u.id, 'Female'
+FROM users u
+WHERE u.email = 'amit.sharma@example.com'
+AND NOT EXISTS (
+    SELECT 1 FROM tenant_preferred_genders tpg 
+    WHERE tpg.tenant_id = u.id AND tpg.preferred_gender = 'Female'
+);
+
+-- Insert sample testimonials only if they don't exist
+INSERT INTO testimonials (author_name, content, rating, display_order)
+SELECT 'Rahul Mehta', 'RoomieMatcher helped me find the perfect roommate in just a week! We have similar cleanliness habits and both love quiet evenings. Couldn''t be happier with my living situation now.', 5, 1
+WHERE NOT EXISTS (SELECT 1 FROM testimonials WHERE author_name = 'Rahul Mehta');
+
+INSERT INTO testimonials (author_name, content, rating, display_order)
+SELECT 'Anjali Desai', 'After struggling to find a compatible roommate for months, RoomieMatcher matched me with someone who has the same budget and lifestyle preferences. The gender preference filter was especially helpful!', 5, 2
+WHERE NOT EXISTS (SELECT 1 FROM testimonials WHERE author_name = 'Anjali Desai');
+
+-- Sample matches will be generated automatically by the application logic

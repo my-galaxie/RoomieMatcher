@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - RoomieMatcher</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .error-container {
+            text-align: center;
+            padding: 80px 0;
+        }
+        .error-icon {
+            font-size: 80px;
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+        .btn-action {
+            margin: 0 10px;
+        }
+        .error-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">RoomieMatcher</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li sec:authorize="isAuthenticated()" class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li sec:authorize="isAuthenticated()" class="nav-item">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="nav-link btn btn-link" style="display: inline; border: none; background: none; padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x); color: rgba(255,255,255,.75);">Logout</button>
+                        </form>
+                    </li>
+                    <li sec:authorize="!isAuthenticated()" class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li sec:authorize="!isAuthenticated()" class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="error-container">
+            <div class="error-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h1 class="display-4">Oops! Something went wrong</h1>
+            <p class="lead">We're sorry, but we encountered an issue while processing your request.</p>
+            
+            <div class="mt-4">
+                <a href="/" class="btn btn-primary btn-action">Go to Homepage</a>
+                <a href="/login" class="btn btn-outline-primary btn-action">Login Again</a>
+                <a href="/register" class="btn btn-outline-primary btn-action">Register</a>
+            </div>
+            
+            <div class="error-details" th:if="${error != null}">
+                <h5>Error Details:</h5>
+                <p><strong>Status:</strong> <span th:text="${status}">500</span></p>
+                <p><strong>Error:</strong> <span th:text="${error}">Internal Server Error</span></p>
+                <p><strong>Message:</strong> <span th:text="${message}">Error message</span></p>
+                <p><strong>Path:</strong> <span th:text="${path}">Path</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <h5>RoomieMatcher</h5>
+                    <p class="mb-0">Finding compatible roommates made easy.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">&copy; 2023 RoomieMatcher. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

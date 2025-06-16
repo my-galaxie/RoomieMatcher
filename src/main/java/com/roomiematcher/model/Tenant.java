@@ -2,6 +2,12 @@ package com.roomiematcher.model;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @DiscriminatorValue("TENANT")
@@ -9,26 +15,23 @@ public class Tenant extends User {
 
     private Double budget;
     private String location;
-    private Boolean smoking;
-    private Boolean pets;
     private Integer cleanlinessLevel;
     private Integer noiseTolerance;
+    private Boolean smoking;
+    private Boolean pets;
+    
+    @ElementCollection
+    @CollectionTable(name = "tenant_preferred_genders", joinColumns = @JoinColumn(name = "tenant_id"))
+    @Column(name = "preferred_gender")
+    private Set<String> preferredGenders = new HashSet<>();
 
-    // No-args constructor required by JPA
+    // Constructors
     public Tenant() {
         super();
     }
 
-    // Parameterized constructor to initialize fields
-    public Tenant(String name, String email, String password, Double budget, String location,
-                  Boolean smoking, Boolean pets, Integer cleanlinessLevel, Integer noiseTolerance) {
+    public Tenant(String name, String email, String password) {
         super(name, email, password);
-        this.budget = budget;
-        this.location = location;
-        this.smoking = smoking;
-        this.pets = pets;
-        this.cleanlinessLevel = cleanlinessLevel;
-        this.noiseTolerance = noiseTolerance;
     }
 
     // Getters and Setters
@@ -48,6 +51,22 @@ public class Tenant extends User {
         this.location = location;
     }
 
+    public Integer getCleanlinessLevel() {
+        return cleanlinessLevel;
+    }
+
+    public void setCleanlinessLevel(Integer cleanlinessLevel) {
+        this.cleanlinessLevel = cleanlinessLevel;
+    }
+
+    public Integer getNoiseTolerance() {
+        return noiseTolerance;
+    }
+
+    public void setNoiseTolerance(Integer noiseTolerance) {
+        this.noiseTolerance = noiseTolerance;
+    }
+
     public Boolean getSmoking() {
         return smoking;
     }
@@ -63,20 +82,25 @@ public class Tenant extends User {
     public void setPets(Boolean pets) {
         this.pets = pets;
     }
-
-    public Integer getCleanlinessLevel() {
-        return cleanlinessLevel;
+    
+    public Set<String> getPreferredGenders() {
+        return preferredGenders;
     }
-
-    public void setCleanlinessLevel(Integer cleanlinessLevel) {
-        this.cleanlinessLevel = cleanlinessLevel;
+    
+    public void setPreferredGenders(Set<String> preferredGenders) {
+        this.preferredGenders = preferredGenders;
     }
-
-    public Integer getNoiseTolerance() {
-        return noiseTolerance;
+    
+    public void addPreferredGender(String gender) {
+        if (this.preferredGenders == null) {
+            this.preferredGenders = new HashSet<>();
+        }
+        this.preferredGenders.add(gender);
     }
-
-    public void setNoiseTolerance(Integer noiseTolerance) {
-        this.noiseTolerance = noiseTolerance;
+    
+    public void removePreferredGender(String gender) {
+        if (this.preferredGenders != null) {
+            this.preferredGenders.remove(gender);
+        }
     }
 }
