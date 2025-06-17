@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-# 🚀 RoomieMatcher – AI-Powered Roommate Matching System
+
+# 🚀 RoomieMatcher – Intelligent Roommate Matching System
 
 RoomieMatcher is a web application that helps users find compatible roommates based on their preferences and lifestyle choices. The application uses an intelligent matching algorithm to calculate compatibility scores between potential roommates.
 
@@ -7,13 +7,17 @@ RoomieMatcher is a web application that helps users find compatible roommates ba
 
 - **User Authentication**: Secure registration and login system
 - **Preference Setting**: Users can set their preferences for budget, location, cleanliness, noise tolerance, smoking, and pets
-- **AI-Powered Matching**: Smart algorithm that calculates compatibility scores based on user preferences
+- **Smart Matching Algorithm**: Smart algorithm that calculates compatibility scores based on user preferences
 - **Match Visualization**: Clear display of potential roommates with compatibility scores
 - **Responsive Design**: Works on desktop and mobile devices
 - **Email Verification**: OTP-based email verification
 - **Profile Management**: Manage user profile and preferences
 - **Search and Filter**: Search and filter potential roommates
 - **Gender-Based Filtering**: Filter roommates based on gender
+- REST API endpoints
+- Styled web interface using Thymeleaf + Bootstrap
+- PostgreSQL database integration
+- Java OOP concepts: Inheritance, Interfaces, Threads implemented
 
 ## 🛠️ Technology Stack
 
@@ -22,7 +26,7 @@ RoomieMatcher is a web application that helps users find compatible roommates ba
 - **Database**: PostgreSQL
 - **Security**: Spring Security with BCrypt password encoding
 - **ORM**: Hibernate/JPA
-
+  
 ## 📋 Prerequisites
 
 - Java 17 or higher
@@ -123,11 +127,11 @@ The algorithm assigns weights to each factor and calculates a final score out of
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is created for learning purposes only.
 
-## 👥 Contributors
+## 👥 Creator
 
-- Your Name - Initial work 
+Sahana H J 
 
 ## Development Notes
 
@@ -135,68 +139,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Sample OTPs are printed to the console for testing
 - To enable actual email sending, update the email configuration in `application.properties` 
 =======
-# RoomieMatcher - Roommate Compatibility Finder
 
-RoomieMatcher is a Java-based Spring Boot web application that helps tenants find compatible roommates by calculating match scores based on preferences like location, budget, cleanliness, and noise tolerance.
-
----
-
-##  Features
-- Match score calculation using a custom algorithm
-- Preloaded tenant data via `data.sql`
-- REST API endpoints
-- Styled web interface using Thymeleaf + Bootstrap
-- PostgreSQL database integration
-- Java OOP concepts: Inheritance, Interfaces, Threads
-
----
-
-##  Technologies Used
-- Java 17
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- Thymeleaf
-- Bootstrap 5
-
----
-
-##  Prerequisites
-Install the following:
-- Java JDK 17+
-- Maven
-- PostgreSQL
-- Git
-
----
-
-##  Clone the Repository
-```bash
-git clone https://github.com/<your-username>/roomiematcher.git
-cd roomiematcher
-```
-
----
-
-##  Configure Database
-1. Create a database in PostgreSQL:
-```sql
-CREATE DATABASE roomiematcher_db;
-```
-
-2. Update `src/main/resources/application.properties`:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/roomiematcher_db
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.show-sql=true
-spring.sql.init.mode=always
-spring.jpa.defer-datasource-initialization=true
-```
-
----
 
 ## ▶️ Run the Application
 ### Option 1: With Maven Wrapper
@@ -233,12 +176,8 @@ You can modify this to add more tenants.
 - **Thread**: Background data cleaning simulated in `RoommateService`
 ---
 
-##  License
-This project is for educational use.
 
----
 
 ## 📬 Contact
-For support or suggestions, open an issue or contact sahanahj5711@gmail.com
+For support or suggestions, open an issue ,please  contact sahanahj5711@gmail.com
 
->>>>>>> 8a01580d059cc8abb6926a2c165f19c967d8181d
