@@ -146,6 +146,10 @@
                             <strong>Email:</strong> <span th:text="${currentTenant.email}">user@example.com</span>
                         </div>
                         <div class="preference-item">
+                            <i class="bi bi-gender-ambiguous preference-icon"></i>
+                            <strong>Gender:</strong> <span th:text="${currentTenant.gender != null ? currentTenant.gender : 'Not specified'}">Male</span>
+                        </div>
+                        <div class="preference-item">
                             <i class="bi bi-currency-rupee preference-icon"></i>
                             <strong>Budget:</strong> ₹<span th:text="${currentTenant.budget}">15000</span>
                         </div>
@@ -292,7 +296,9 @@
                 <div class="match-card">
                     <div class="match-header">
                         <h5 class="mb-0" th:text="${match.name}">Match Name</h5>
-                        <p class="text-muted mb-0" th:text="${match.location}">Delhi</p>
+                        <p class="text-muted mb-0">
+                            <span th:text="${match.gender}">Male</span> • <span th:text="${match.location}">Delhi</span>
+                        </p>
                         <div th:class="${match.score >= 75 ? 'match-score score-high' : (match.score >= 50 ? 'match-score score-medium' : 'match-score score-low')}" 
                              th:text="${#numbers.formatDecimal(match.score, 0, 0)} + '%'">85%</div>
                     </div>

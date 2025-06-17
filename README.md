@@ -9,6 +9,10 @@ RoomieMatcher is a web application that helps users find compatible roommates ba
 - **AI-Powered Matching**: Smart algorithm that calculates compatibility scores based on user preferences
 - **Match Visualization**: Clear display of potential roommates with compatibility scores
 - **Responsive Design**: Works on desktop and mobile devices
+- **Email Verification**: OTP-based email verification
+- **Profile Management**: Manage user profile and preferences
+- **Search and Filter**: Search and filter potential roommates
+- **Gender-Based Filtering**: Filter roommates based on gender
 
 ## 🛠️ Technology Stack
 
@@ -36,8 +40,8 @@ RoomieMatcher is a web application that helps users find compatible roommates ba
 2. Update the `application.properties` file with your database credentials:
    ```properties
    spring.datasource.url=jdbc:postgresql://localhost:5432/roomiematcher_db
-   spring.datasource.username=your_username
-   spring.datasource.password=your_password
+   spring.datasource.username=postgres
+   spring.datasource.password=12345
    ```
 
 ### Running the Application
@@ -55,8 +59,31 @@ RoomieMatcher is a web application that helps users find compatible roommates ba
 
 3. Access the application in your browser:
    ```
-   http://localhost:8081
+   http://localhost:8080
    ```
+
+### Data Persistence
+
+The application is configured to maintain user data and preferences between restarts. The following settings in `application.properties` ensure data persistence:
+
+```
+spring.jpa.hibernate.ddl-auto=update
+spring.sql.init.mode=never
+```
+
+### Initializing Sample Data
+
+To initialize the database with sample data (only needed once):
+
+1. Set `app.init-data=true` in `application.properties`
+2. Run the application
+3. After the data is initialized, set `app.init-data=false` to prevent re-initialization
+
+Alternatively, you can run the `init-data.sql` script directly in your PostgreSQL database:
+
+```
+psql -U postgres -d roomiematcher_db -f src/main/resources/init-data.sql
+```
 
 ## 🧮 Matching Algorithm
 
@@ -100,3 +127,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 👥 Contributors
 
 - Your Name - Initial work 
+
+## Development Notes
+
+- Email functionality is configured in development mode by default
+- Sample OTPs are printed to the console for testing
+- To enable actual email sending, update the email configuration in `application.properties` 

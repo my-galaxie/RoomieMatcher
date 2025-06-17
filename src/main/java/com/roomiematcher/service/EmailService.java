@@ -12,8 +12,11 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:dev@example.com}")
     private String fromEmail;
+    
+    @Value("${app.mail.development-mode:true}")
+    private boolean developmentMode;
 
     /**
      * Sends a simple email message
@@ -30,21 +33,32 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(body);
             
-            // Try to send the email, but don't break if it fails
-            try {
-                mailSender.send(message);
-                System.out.println("Email sent successfully to: " + to);
-            } catch (Exception e) {
-                // Log the exception but don't throw it to avoid breaking the application flow
-                System.err.println("Failed to send email: " + e.getMessage());
-                
-                // Print the email content to the console for development purposes
-                System.out.println("==================================================");
+            if (developmentMode) {
+                // In development mode, just log the email
+                System.out.println("\n==================================================");
                 System.out.println("DEVELOPMENT MODE: Email would have been sent");
+                System.out.println("From: " + fromEmail);
                 System.out.println("To: " + to);
                 System.out.println("Subject: " + subject);
-                System.out.println("Body: " + body);
-                System.out.println("==================================================");
+                System.out.println("Body: \n" + body);
+                System.out.println("==================================================\n");
+            } else {
+                // In production, try to send the real email
+                try {
+                    mailSender.send(message);
+                    System.out.println("Email sent successfully to: " + to);
+                } catch (Exception e) {
+                    // Log the exception but don't throw it to avoid breaking the application flow
+                    System.err.println("Failed to send email: " + e.getMessage());
+                    
+                    // Print the email content to the console as a backup
+                    System.out.println("\n==================================================");
+                    System.out.println("EMAIL SENDING FAILED - Content was:");
+                    System.out.println("To: " + to);
+                    System.out.println("Subject: " + subject);
+                    System.out.println("Body: \n" + body);
+                    System.out.println("==================================================\n");
+                }
             }
         } catch (Exception e) {
             // Log any other exceptions
