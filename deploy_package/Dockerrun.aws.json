@@ -11,7 +11,7 @@
   "containerDefinitions": [
     {
       "name": "postgres",
-      "image": "postgres:13",
+      "image": "postgres:15-alpine",
       "essential": true,
       "memory": 256,
       "mountPoints": [
@@ -29,15 +29,15 @@
       "environment": [
         {
           "name": "POSTGRES_USER",
-          "value": "${MASTER_DB_USERNAME}"
+          "value": "${DB_USERNAME}"
         },
         {
           "name": "POSTGRES_PASSWORD",
-          "value": "${MASTER_DB_PASSWORD}"
+          "value": "${DB_PASSWORD}"
         },
         {
-          "name": "POSTGRES_DB",
-          "value": "postgres"
+          "name": "POSTGRES_MULTIPLE_DATABASES",
+          "value": "auth_db,profile_db,match_db,notification_db"
         }
       ]
     },
@@ -69,19 +69,19 @@
         },
         {
           "name": "AUTH_SERVICE_URL",
-          "value": "http://auth-service:8081/api/v1"
+          "value": "http://auth-service:8081"
         },
         {
           "name": "PROFILE_SERVICE_URL",
-          "value": "http://profile-service:8082/api/v1"
+          "value": "http://profile-service:8082"
         },
         {
           "name": "MATCH_SERVICE_URL",
-          "value": "http://match-service:8083/api/v1"
+          "value": "http://match-service:8083"
         },
         {
           "name": "NOTIFICATION_SERVICE_URL",
-          "value": "http://notification-service:8084/api/v1"
+          "value": "http://notification-service:8084"
         }
       ]
     },
@@ -105,24 +105,24 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/auth_db"
         },
         {
-          "name": "AUTH_DB_USERNAME",
-          "value": "${AUTH_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "AUTH_DB_PASSWORD",
-          "value": "${AUTH_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
           "value": "${JWT_SECRET}"
         },
         {
-          "name": "NOTIFICATION_SERVICE_URL",
-          "value": "http://notification-service:8084/api/v1"
+          "name": "JWT_EXPIRATION",
+          "value": "86400000"
         }
       ]
     },
@@ -147,16 +147,16 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/profile_db"
         },
         {
-          "name": "PROFILE_DB_USERNAME",
-          "value": "${PROFILE_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "PROFILE_DB_PASSWORD",
-          "value": "${PROFILE_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
@@ -185,24 +185,20 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/match_db"
         },
         {
-          "name": "MATCH_DB_USERNAME",
-          "value": "${MATCH_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "MATCH_DB_PASSWORD",
-          "value": "${MATCH_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
           "value": "${JWT_SECRET}"
-        },
-        {
-          "name": "PROFILE_SERVICE_URL",
-          "value": "http://profile-service:8082/api/v1"
         }
       ]
     },
@@ -226,20 +222,16 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/notification_db"
         },
         {
-          "name": "NOTIFICATION_DB_USERNAME",
-          "value": "${NOTIFICATION_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "NOTIFICATION_DB_PASSWORD",
-          "value": "${NOTIFICATION_DB_PASSWORD}"
-        },
-        {
-          "name": "JWT_SECRET",
-          "value": "${JWT_SECRET}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "MAIL_HOST",
@@ -256,10 +248,6 @@
         {
           "name": "MAIL_PASSWORD",
           "value": "${MAIL_PASSWORD}"
-        },
-        {
-          "name": "AWS_SES_ENABLED",
-          "value": "${AWS_SES_ENABLED}"
         },
         {
           "name": "AWS_SES_ACCESS_KEY",
@@ -280,6 +268,14 @@
         {
           "name": "NOTIFICATION_PROVIDER",
           "value": "${NOTIFICATION_PROVIDER}"
+        },
+        {
+          "name": "MAIL_PROPERTIES_MAIL_SMTP_AUTH",
+          "value": "true"
+        },
+        {
+          "name": "MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE",
+          "value": "true"
         }
       ]
     }

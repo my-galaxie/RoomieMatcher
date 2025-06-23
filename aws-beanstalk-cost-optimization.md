@@ -39,9 +39,9 @@ For a minimal production deployment with reduced resources:
    - Replace t2.small with t2.micro
    - Savings: $8.40/month
 
-2. **Use Shared Database**:
-   - Use a single database for all services instead of separate databases
-   - Potential savings: $0 (same instance size, but simpler management)
+2. **Use Shared Database with Multiple Databases**:
+   - Already implemented: Single RDS instance with multiple databases
+   - Savings: Already optimized
 
 3. **Optimize Load Balancer Usage**:
    - Use a Classic Load Balancer instead of Application Load Balancer
@@ -151,7 +151,11 @@ aws:autoscaling:asg:
   MaxSize: 2
 ```
 
-4. **Deploy with Optimized Settings**:
+4. **Optimize RDS Instance**:
+   - Already implemented: Using a single RDS instance with multiple databases
+   - Consider using a burstable instance type like db.t4g.micro for better price/performance
+
+5. **Deploy with Optimized Settings**:
 
 ```bash
 aws elasticbeanstalk create-environment \
@@ -193,6 +197,30 @@ Resources:
 
 This configuration will scale down the environment during non-business hours to save costs.
 
+### Option 4: RDS Optimization
+
+Our current setup already uses a single RDS instance with multiple databases, which is cost-efficient. Additional optimizations include:
+
+1. **Use Graviton-based Instances**:
+   - Replace db.t3.micro with db.t4g.micro for better price/performance
+   - Potential savings: ~20% on RDS costs
+
+2. **Configure RDS Storage Auto-scaling**:
+   - Set maximum storage threshold to avoid over-provisioning
+   - Only pay for what you need
+
+```yaml
+Resources:
+  AWSEBRDSDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      MaxAllocatedStorage: 50  # Maximum storage in GB
+```
+
+3. **Schedule RDS Instance Stopping**:
+   - For development environments, stop RDS instances during non-business hours
+   - Use AWS Lambda and EventBridge for scheduling
+
 ## Comparison of Deployment Options
 
 | Deployment Option | Monthly Cost | Pros | Cons |
@@ -223,6 +251,7 @@ aws budgets create-budget \
    - Rightsize instances based on actual usage
 
 ```bash
+# Monitor EC2 instances
 aws cloudwatch get-metric-statistics \
     --namespace AWS/EC2 \
     --metric-name CPUUtilization \
@@ -231,10 +260,34 @@ aws cloudwatch get-metric-statistics \
     --end-time 2023-01-07T00:00:00Z \
     --period 86400 \
     --statistics Average
+
+# Monitor RDS instance
+aws cloudwatch get-metric-statistics \
+    --namespace AWS/RDS \
+    --metric-name CPUUtilization \
+    --dimensions Name=DBInstanceIdentifier,Value=<db-instance-id> \
+    --start-time 2023-01-01T00:00:00Z \
+    --end-time 2023-01-07T00:00:00Z \
+    --period 86400 \
+    --statistics Average
+```
+
+4. **Database Performance Monitoring**:
+   - Enable Enhanced Monitoring for RDS
+   - Review slow query logs to optimize database performance
+
+```bash
+aws rds modify-db-instance \
+    --db-instance-identifier <db-instance-id> \
+    --monitoring-interval 60 \
+    --monitoring-role-arn <monitoring-role-arn> \
+    --region <your-region>
 ```
 
 ## Conclusion
 
 By implementing these cost optimization strategies, you can reduce the cost of running the RoomieMatcher application on AWS Elastic Beanstalk by 33-100%, depending on your requirements and eligibility for the AWS Free Tier.
+
+The current architecture already implements a significant cost optimization by using a single RDS instance with multiple databases, providing logical isolation without incurring separate costs per database instance.
 
 For development and testing purposes, you can deploy the application at no cost for the first 12 months. For production deployments, you can optimize costs to around $33.46 per month while maintaining reliability and performance. 

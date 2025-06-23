@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://${RDS_ENDPOINT:localhost:5432}/match_db
+    username: ${MATCH_DB_USERNAME:match_user}
+    password: ${MATCH_DB_PASSWORD:match_password}
     hikari:
       maximum-pool-size: 5
       connection-timeout: 30000
@@ -14,6 +14,11 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        ddl-auto: validate
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
 # JWT Configuration
 jwt:

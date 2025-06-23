@@ -1,179 +1,132 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'RoomieMatcher - RDS PostgreSQL Database Infrastructure'
+Description: 'CloudFormation template for RDS PostgreSQL instance for RoomieMatcher'
 
 Parameters:
-  EnvironmentName:
-    Description: Environment name (dev, staging, prod)
-    Type: String
-    Default: dev
-    AllowedValues:
-      - dev
-      - staging
-      - prod
-  
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where RDS will be deployed
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: List of subnet IDs for the RDS instance
+
   DBInstanceClass:
-    Description: Database instance class
     Type: String
     Default: db.t3.micro
+    Description: RDS instance type
     AllowedValues:
       - db.t3.micro
       - db.t3.small
       - db.t3.medium
-      - db.t3.large
-      - db.r5.large
-  
-  DBMasterUsername:
-    Description: Database master username
+      - db.t4g.micro
+      - db.t4g.small
+
+  DBName:
     Type: String
     Default: postgres
-    NoEcho: false
-  
-  DBMasterPassword:
-    Description: Database master password
+    Description: Main database name
+
+  DBUsername:
     Type: String
+    Description: Master username for the RDS instance
     NoEcho: true
-    MinLength: 8
-  
+
+  DBPassword:
+    Type: String
+    Description: Master password for the RDS instance
+    NoEcho: true
+
   DBAllocatedStorage:
-    Description: Database allocated storage in GB
     Type: Number
     Default: 20
+    Description: Allocated storage in GB
     MinValue: 20
     MaxValue: 100
-  
+
   DBBackupRetentionPeriod:
-    Description: Database backup retention period in days
     Type: Number
     Default: 7
+    Description: Number of days to retain backups
     MinValue: 0
     MaxValue: 35
 
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
 Resources:
-  # RDS Parameter Group
-  RDSParameterGroup:
-    Type: AWS::RDS::DBParameterGroup
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      Description: !Sub ${EnvironmentName} RoomieMatcher PostgreSQL parameter group
-      Family: postgres15
-      Parameters:
-        max_connections: '100'
-        shared_buffers: '{DBInstanceClass}' 
-        effective_cache_size: '{DBInstanceClass}'
+      GroupDescription: Security group for RDS PostgreSQL
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0  # In production, restrict to your application security group
       Tags:
-        - Key: Environment
-          Value: !Ref EnvironmentName
-  
-  # RDS Subnet Group
-  RDSSubnetGroup:
+        - Key: Name
+          Value: !Sub 'roomiematcher-${Environment}-db-sg'
+
+  DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: !Sub ${EnvironmentName} RoomieMatcher DB subnet group
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${EnvironmentName}-PrivateSubnet1
-        - Fn::ImportValue: !Sub ${EnvironmentName}-PrivateSubnet2
+      DBSubnetGroupDescription: Subnet group for RoomieMatcher RDS
+      SubnetIds: !Ref SubnetIds
       Tags:
-        - Key: Environment
-          Value: !Ref EnvironmentName
-  
-  # Auth Database
-  AuthDatabase:
+        - Key: Name
+          Value: !Sub 'roomiematcher-${Environment}-db-subnet-group'
+
+  RDSInstance:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBName: roomie_auth
-      Engine: postgres
-      EngineVersion: 15.3
-      DBInstanceClass: !Ref DBInstanceClass
+      DBInstanceIdentifier: !Sub 'roomiematcher-${Environment}-db'
       AllocatedStorage: !Ref DBAllocatedStorage
-      StorageType: gp2
-      MasterUsername: !Ref DBMasterUsername
-      MasterUserPassword: !Ref DBMasterPassword
-      DBParameterGroupName: !Ref RDSParameterGroup
-      DBSubnetGroupName: !Ref RDSSubnetGroup
+      DBInstanceClass: !Ref DBInstanceClass
+      Engine: postgres
+      EngineVersion: '13.7'
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
       VPCSecurityGroups:
-        - Fn::ImportValue: !Sub ${EnvironmentName}-DatabaseSecurityGroup
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
       BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
       MultiAZ: !If [IsProd, true, false]
       PubliclyAccessible: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-auth-db
-        - Key: Environment
-          Value: !Ref EnvironmentName
-  
-  # Profile Database
-  ProfileDatabase:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      DBName: roomie_profile
-      Engine: postgres
-      EngineVersion: 15.3
-      DBInstanceClass: !Ref DBInstanceClass
-      AllocatedStorage: !Ref DBAllocatedStorage
       StorageType: gp2
-      MasterUsername: !Ref DBMasterUsername
-      MasterUserPassword: !Ref DBMasterPassword
-      DBParameterGroupName: !Ref RDSParameterGroup
-      DBSubnetGroupName: !Ref RDSSubnetGroup
-      VPCSecurityGroups:
-        - Fn::ImportValue: !Sub ${EnvironmentName}-DatabaseSecurityGroup
-      BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
-      MultiAZ: !If [IsProd, true, false]
-      PubliclyAccessible: false
+      StorageEncrypted: true
+      DeletionProtection: !If [IsProd, true, false]
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName}-profile-db
+          Value: !Sub 'roomiematcher-${Environment}-db'
         - Key: Environment
-          Value: !Ref EnvironmentName
-  
-  # Match Database
-  MatchDatabase:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      DBName: roomie_match
-      Engine: postgres
-      EngineVersion: 15.3
-      DBInstanceClass: !Ref DBInstanceClass
-      AllocatedStorage: !Ref DBAllocatedStorage
-      StorageType: gp2
-      MasterUsername: !Ref DBMasterUsername
-      MasterUserPassword: !Ref DBMasterPassword
-      DBParameterGroupName: !Ref RDSParameterGroup
-      DBSubnetGroupName: !Ref RDSSubnetGroup
-      VPCSecurityGroups:
-        - Fn::ImportValue: !Sub ${EnvironmentName}-DatabaseSecurityGroup
-      BackupRetentionPeriod: !Ref DBBackupRetentionPeriod
-      MultiAZ: !If [IsProd, true, false]
-      PubliclyAccessible: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-match-db
-        - Key: Environment
-          Value: !Ref EnvironmentName
+          Value: !Ref Environment
 
 Conditions:
-  IsProd: !Equals [!Ref EnvironmentName, 'prod']
+  IsProd: !Equals [!Ref Environment, 'prod']
 
 Outputs:
-  AuthDatabaseEndpoint:
-    Description: Auth Database Endpoint
-    Value: !GetAtt AuthDatabase.Endpoint.Address
+  RDSEndpoint:
+    Description: RDS instance endpoint
+    Value: !GetAtt RDSInstance.Endpoint.Address
     Export:
-      Name: !Sub ${EnvironmentName}-AuthDatabaseEndpoint
-  
-  ProfileDatabaseEndpoint:
-    Description: Profile Database Endpoint
-    Value: !GetAtt ProfileDatabase.Endpoint.Address
+      Name: !Sub '${AWS::StackName}-RDSEndpoint'
+
+  RDSPort:
+    Description: RDS instance port
+    Value: !GetAtt RDSInstance.Endpoint.Port
     Export:
-      Name: !Sub ${EnvironmentName}-ProfileDatabaseEndpoint
-  
-  MatchDatabaseEndpoint:
-    Description: Match Database Endpoint
-    Value: !GetAtt MatchDatabase.Endpoint.Address
+      Name: !Sub '${AWS::StackName}-RDSPort'
+
+  DBSecurityGroupId:
+    Description: Security group ID for the RDS instance
+    Value: !Ref DBSecurityGroup
     Export:
-      Name: !Sub ${EnvironmentName}-MatchDatabaseEndpoint
-  
-  DatabasePort:
-    Description: Database Port
-    Value: !GetAtt AuthDatabase.Endpoint.Port
-    Export:
-      Name: !Sub ${EnvironmentName}-DatabasePort 
+      Name: !Sub '${AWS::StackName}-DBSecurityGroupId' 

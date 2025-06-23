@@ -22,6 +22,7 @@ Before you begin, ensure you have the following:
 - Java 17 or later installed
 - Maven installed
 - Git installed
+- PostgreSQL client (psql) installed
 
 ## Project Structure
 
@@ -59,19 +60,45 @@ aws ecr create-repository --repository-name roomiematcher-match-service --region
 aws ecr create-repository --repository-name roomiematcher-notification-service --region <your-region>
 ```
 
-3. **Create an RDS Instance for PostgreSQL** (Optional if using embedded PostgreSQL)
+3. **Create an RDS Instance for PostgreSQL**
 
 ```bash
-aws rds create-db-instance \
-    --db-instance-identifier roomiematcher-db \
-    --db-instance-class db.t3.micro \
-    --engine postgres \
-    --allocated-storage 20 \
-    --master-username postgres \
-    --master-user-password <your-password> \
-    --vpc-security-group-ids <security-group-id> \
-    --db-subnet-group-name <subnet-group-name> \
-    --region <your-region>
+# Deploy the CloudFormation template for RDS
+aws cloudformation create-stack \
+  --stack-name roomiematcher-db \
+  --template-body file://deployment/cloudformation/database/rds.yaml \
+  --parameters \
+    ParameterKey=VpcId,ParameterValue=<your-vpc-id> \
+    ParameterKey=SubnetIds,ParameterValue="<subnet-id-1>,<subnet-id-2>" \
+    ParameterKey=DBUsername,ParameterValue=<master-username> \
+    ParameterKey=DBPassword,ParameterValue=<master-password> \
+    ParameterKey=Environment,ParameterValue=prod \
+  --region <your-region>
+```
+
+4. **Get the RDS Endpoint**
+
+```bash
+aws cloudformation describe-stacks \
+  --stack-name roomiematcher-db \
+  --query "Stacks[0].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" \
+  --output text \
+  --region <your-region>
+```
+
+5. **Initialize the Databases**
+
+```bash
+# Run the database initialization script
+cd deployment/scripts
+./setup-rds-databases.sh <rds-endpoint> <master-username> <master-password>
+```
+
+6. **Generate Environment Variables**
+
+```bash
+# Generate environment variables for your services
+./setup-env-variables.sh <rds-endpoint> env-variables.txt
 ```
 
 ### Step 2: Build and Push Docker Images
@@ -114,21 +141,40 @@ aws elasticbeanstalk create-application --application-name roomiematcher --regio
 2. **Create an Application Version**
 
 ```bash
-# First, update Dockerrun.aws.json with your account ID and region
+# Update Dockerrun.aws.json with your account ID, region, and other environment variables
+# Use the values from the env-variables.txt file generated earlier
+source env-variables.txt
+
+# Replace placeholders in Dockerrun.aws.json
 sed -i "s|\${AWS_ACCOUNT_ID}|<your-account-id>|g" Dockerrun.aws.json
 sed -i "s|\${AWS_REGION}|<your-region>|g" Dockerrun.aws.json
+sed -i "s|\${JWT_SECRET}|$JWT_SECRET|g" Dockerrun.aws.json
+sed -i "s|\${RDS_ENDPOINT}|$RDS_ENDPOINT|g" Dockerrun.aws.json
+sed -i "s|\${MASTER_DB_USERNAME}|$MASTER_DB_USERNAME|g" Dockerrun.aws.json
+sed -i "s|\${MASTER_DB_PASSWORD}|$MASTER_DB_PASSWORD|g" Dockerrun.aws.json
+sed -i "s|\${AUTH_DB_USERNAME}|$AUTH_DB_USERNAME|g" Dockerrun.aws.json
+sed -i "s|\${AUTH_DB_PASSWORD}|$AUTH_DB_PASSWORD|g" Dockerrun.aws.json
+sed -i "s|\${PROFILE_DB_USERNAME}|$PROFILE_DB_USERNAME|g" Dockerrun.aws.json
+sed -i "s|\${PROFILE_DB_PASSWORD}|$PROFILE_DB_PASSWORD|g" Dockerrun.aws.json
+sed -i "s|\${MATCH_DB_USERNAME}|$MATCH_DB_USERNAME|g" Dockerrun.aws.json
+sed -i "s|\${MATCH_DB_PASSWORD}|$MATCH_DB_PASSWORD|g" Dockerrun.aws.json
+sed -i "s|\${NOTIFICATION_DB_USERNAME}|$NOTIFICATION_DB_USERNAME|g" Dockerrun.aws.json
+sed -i "s|\${NOTIFICATION_DB_PASSWORD}|$NOTIFICATION_DB_PASSWORD|g" Dockerrun.aws.json
 
 # Create a ZIP file with deployment files
-zip -r deployment.zip Dockerrun.aws.json .ebextensions/
+mkdir -p deploy_package
+cp -r .ebextensions deploy_package/
+cp Dockerrun.aws.json deploy_package/
+cd deploy_package && zip -r ../deploy.zip .
 
 # Upload to S3
-aws s3 cp deployment.zip s3://roomiematcher-deployment-artifacts/
+aws s3 cp deploy.zip s3://roomiematcher-deployment-artifacts/
 
 # Create application version
 aws elasticbeanstalk create-application-version \
     --application-name roomiematcher \
     --version-label v1 \
-    --source-bundle S3Bucket=roomiematcher-deployment-artifacts,S3Key=deployment.zip \
+    --source-bundle S3Bucket=roomiematcher-deployment-artifacts,S3Key=deploy.zip \
     --region <your-region>
 ```
 
@@ -154,11 +200,6 @@ Create a file named `env-config.json` with the following content:
     "Value": "prod"
   },
   {
-    "Namespace": "aws:elasticbeanstalk:application:environment",
-    "OptionName": "JWT_SECRET",
-    "Value": "your-jwt-secret-here"
-  },
-  {
     "Namespace": "aws:autoscaling:launchconfiguration",
     "OptionName": "InstanceType",
     "Value": "t2.small"
@@ -168,7 +209,14 @@ Create a file named `env-config.json` with the following content:
 
 ### Step 4: Set Up CI/CD Pipeline (Optional)
 
-1. **Create a CodeBuild Project**
+1. **Create a GitHub Actions Workflow**
+
+The project already includes a GitHub Actions workflow file (`.github/workflows/deploy-to-aws.yml`) that automates the deployment process. To use it:
+
+- Add the required secrets to your GitHub repository (see DEPLOYMENT_SECRETS.md)
+- Push your code to the main branch to trigger the workflow
+
+2. **Alternative: Create a CodeBuild Project**
 
 ```bash
 aws codebuild create-project \
@@ -181,29 +229,7 @@ aws codebuild create-project \
     --region <your-region>
 ```
 
-2. **Create a CodePipeline**
-
-```bash
-aws codepipeline create-pipeline \
-    --pipeline-name roomiematcher-pipeline \
-    --role-arn arn:aws:iam::<your-account-id>:role/codepipeline-service-role \
-    --artifact-store type=S3,location=roomiematcher-deployment-artifacts \
-    --pipeline file://pipeline-definition.json \
-    --region <your-region>
-```
-
-Create a file named `pipeline-definition.json` with the appropriate pipeline configuration.
-
-### Step 5: Configure Database
-
-1. **If using RDS**:
-   - Update the application properties in each service to point to the RDS instance
-   - Run the database migration scripts
-
-2. **If using embedded PostgreSQL**:
-   - The database will be created automatically when the application starts
-
-### Step 6: Deploy and Test
+### Step 5: Deploy and Test
 
 1. **Monitor the Deployment**
 
@@ -236,118 +262,58 @@ The estimated monthly cost for running the RoomieMatcher application on AWS Elas
 - Use AWS Free Tier resources where possible
 - Scale down during non-peak hours
 - Use spot instances for non-critical components
-- Consider using AWS RDS Aurora Serverless for cost-effective database scaling
+- Use a single RDS instance with multiple databases (already implemented)
 
 ## Time Estimation
 
 | Task | Estimated Time |
 |------|---------------|
 | AWS Account Setup and Configuration | 1-2 hours |
+| RDS Setup and Database Initialization | 1-2 hours |
 | Building and Pushing Docker Images | 1-2 hours |
 | Creating Elastic Beanstalk Environment | 1-2 hours |
-| Database Setup and Configuration | 1-2 hours |
 | Testing and Troubleshooting | 2-4 hours |
 | **Total** | **6-12 hours** |
 
-Note: This estimation assumes familiarity with AWS services and Docker. Additional time may be needed for learning and troubleshooting if you're new to these technologies.
-
 ## Monitoring and Maintenance
 
-### CloudWatch Monitoring
+1. **CloudWatch Monitoring**
 
-1. **Set Up CloudWatch Alarms**
+Set up CloudWatch alarms for:
+- EC2 instance CPU and memory usage
+- RDS instance CPU, memory, and storage usage
+- Application load balancer request count and latency
 
-```bash
-aws cloudwatch put-metric-alarm \
-    --alarm-name roomiematcher-cpu-high \
-    --alarm-description "Alarm when CPU exceeds 70%" \
-    --metric-name CPUUtilization \
-    --namespace AWS/EC2 \
-    --statistic Average \
-    --period 300 \
-    --threshold 70 \
-    --comparison-operator GreaterThanThreshold \
-    --dimensions Name=AutoScalingGroupName,Value=<your-asg-name> \
-    --evaluation-periods 2 \
-    --alarm-actions <your-sns-topic-arn> \
-    --region <your-region>
-```
+2. **Database Maintenance**
 
-2. **Enable Enhanced Health Reporting**
+- Schedule regular backups of your RDS instance
+- Monitor database performance and optimize queries as needed
+- Periodically check for database updates and security patches
 
-This is already configured in the `.ebextensions/01_environment.config` file.
+3. **Application Logs**
 
-### Logging
-
-- Application logs are available in CloudWatch Logs
-- You can access the logs through the Elastic Beanstalk console or using the AWS CLI:
-
-```bash
-aws logs get-log-events \
-    --log-group-name /aws/elasticbeanstalk/roomiematcher-env/var/log/app/application.log \
-    --log-stream-name <log-stream-name> \
-    --region <your-region>
-```
-
-### Updating the Application
-
-1. **Build and Push New Docker Images**
-
-```bash
-docker build -t <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/roomiematcher-api-gateway:v2 ./api-gateway-service
-docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/roomiematcher-api-gateway:v2
-```
-
-2. **Update Dockerrun.aws.json with the New Image Tags**
-
-3. **Create a New Application Version and Deploy**
-
-```bash
-zip -r deployment-v2.zip Dockerrun.aws.json .ebextensions/
-aws s3 cp deployment-v2.zip s3://roomiematcher-deployment-artifacts/
-aws elasticbeanstalk create-application-version \
-    --application-name roomiematcher \
-    --version-label v2 \
-    --source-bundle S3Bucket=roomiematcher-deployment-artifacts,S3Key=deployment-v2.zip \
-    --region <your-region>
-aws elasticbeanstalk update-environment \
-    --environment-name roomiematcher-env \
-    --version-label v2 \
-    --region <your-region>
-```
+- Configure your services to send logs to CloudWatch Logs
+- Set up log retention policies to manage storage costs
+- Create CloudWatch Dashboards to visualize application metrics
 
 ## Troubleshooting
 
-### Common Issues and Solutions
+1. **Deployment Issues**
 
-1. **Connection Issues Between Services**
-   - Check security groups and ensure they allow traffic between containers
-   - Verify service URLs in the environment variables
+- Check Elastic Beanstalk events and logs in the AWS Management Console
+- Verify that all environment variables are correctly set
+- Ensure that security groups allow traffic between services
 
 2. **Database Connection Issues**
-   - Check database credentials in environment variables
-   - Ensure the RDS security group allows connections from the Elastic Beanstalk environment
 
-3. **Deployment Failures**
-   - Check Elastic Beanstalk logs for errors
-   - Verify Docker images are correctly built and pushed to ECR
-   - Check for syntax errors in Dockerrun.aws.json or .ebextensions files
+- Verify that the RDS security group allows traffic from the Elastic Beanstalk environment
+- Check that database credentials are correct in environment variables
+- Ensure that the database initialization script ran successfully
 
-4. **Application Errors**
-   - Check application logs in CloudWatch
-   - SSH into the EC2 instance for direct troubleshooting:
+3. **Service Communication Issues**
 
-```bash
-aws elasticbeanstalk retrieve-environment-info \
-    --environment-name roomiematcher-env \
-    --info-type tail \
-    --region <your-region>
-```
-
-### Support Resources
-
-- [AWS Elastic Beanstalk Documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html)
-- [Docker Documentation](https://docs.docker.com/)
-- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- Check that service URLs are correctly configured
+- Verify that all services are running and healthy
+- Inspect network traffic between services using AWS VPC Flow Logs
 
 For additional support, contact your AWS account manager or open a support ticket through the AWS Management Console. 

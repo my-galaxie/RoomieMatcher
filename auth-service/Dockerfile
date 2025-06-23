@@ -44,3 +44,10 @@ EXPOSE 8081
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:8081/api/v1/actuator/health || exit 1 
+
+# Create a deployment package
+RUN mkdir -p deploy_package
+RUN cp -r .ebextensions deploy_package/
+RUN cp Dockerrun.aws.json deploy_package/
+RUN cd deploy_package && zip -r ../deploy.zip .
+RUN cd ..
