@@ -37,7 +37,7 @@ public class StandardEmailService implements EmailService {
             helper.setTo(request.getTo());
             helper.setSubject(request.getSubject());
             
-            String content = request.getText();
+            String content = request.getBody();
             
             // Process template if specified
             if (request.getTemplate() != null && !request.getTemplate().isEmpty()) {

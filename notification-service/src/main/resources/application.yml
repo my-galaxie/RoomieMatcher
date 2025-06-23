@@ -27,8 +27,8 @@ spring:
 aws:
   ses:
     enabled: ${AWS_SES_ENABLED:false}
-    access-key: ${AWS_SES_ACCESS_KEY:your_access_key}
-    secret-key: ${AWS_SES_SECRET_KEY:your_secret_key}
+    access-key: ${AWS_SES_ACCESS_KEY:}
+    secret-key: ${AWS_SES_SECRET_KEY:}
     region: ${AWS_SES_REGION:us-east-1}
     from-email: ${AWS_SES_FROM_EMAIL:no-reply@roomiematcher.com}
 

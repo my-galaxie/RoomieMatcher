@@ -23,7 +23,7 @@ public class EmailRequestDTO {
     @NotBlank
     private String subject;
 
-    private String text;
+    private String body;
 
     private String template;
 

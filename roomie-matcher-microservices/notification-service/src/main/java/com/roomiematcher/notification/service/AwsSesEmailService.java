@@ -44,7 +44,7 @@ public class AwsSesEmailService implements EmailService {
     @Override
     public void sendEmail(EmailRequestDTO request) {
         try {
-            String content = request.getText();
+            String content = request.getBody();
             
             if (request.getTemplate() != null && !request.getTemplate().isEmpty()) {
                 Context context = new Context(Locale.getDefault());

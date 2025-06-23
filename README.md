@@ -4,6 +4,21 @@ RoomieMatcher is a platform that helps users find compatible roommates based on 
 
 This project is a microservices implementation of the RoomieMatcher application, transformed from a monolithic Spring Boot application.
 
+## Project Structure Cleanup
+
+The project structure has been consolidated to use only the root directory structure, eliminating the duplicate `roomie-matcher-microservices` directory. This cleanup ensures:
+
+- Single source of truth for all code
+- Consistent dependency management
+- Simplified build process
+- Elimination of code duplication
+
+To complete the cleanup, run the provided script:
+```bash
+chmod +x cleanup-duplicates.sh
+./cleanup-duplicates.sh
+```
+
 ## Architecture
 
 The application is divided into the following microservices:

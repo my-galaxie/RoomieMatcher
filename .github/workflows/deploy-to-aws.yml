@@ -19,6 +19,10 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
           cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests

@@ -52,7 +52,7 @@ public class StandardEmailService implements EmailService {
                 content = templateEngine.process(request.getTemplate(), context);
             }
             
-            helper.setText(content, true);
+            helper.setText(content, request.isHtml());
             
             mailSender.send(message);
             logger.info("Email sent successfully to: {}", request.getTo());
