@@ -1,0 +1,43 @@
+server:
+  port: ${PORT:8084}
+
+spring:
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+  thymeleaf:
+    cache: true
+
+# AWS SES Configuration
+aws:
+  ses:
+    enabled: true
+    access-key: ${AWS_SES_ACCESS_KEY}
+    secret-key: ${AWS_SES_SECRET_KEY}
+    region: ${AWS_SES_REGION}
+    from-email: ${AWS_SES_FROM_EMAIL}
+
+# Email Provider Configuration
+notification:
+  provider: ${NOTIFICATION_PROVIDER:aws-ses}
+
+jwt:
+  secret: ${JWT_SECRET}
+
+# Disable API docs in production
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+
+# Logging
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.roomiematcher: ${LOG_LEVEL:INFO}
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" 

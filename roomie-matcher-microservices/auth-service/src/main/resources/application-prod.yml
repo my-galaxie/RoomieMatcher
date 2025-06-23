@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8081}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+# Service endpoints
+services:
+  notification-service:
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+
+# Disable API docs in production
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false} 

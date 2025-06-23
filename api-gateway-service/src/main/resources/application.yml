@@ -1,0 +1,116 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            methods: GET,POST,PUT,DELETE
+            series: SERVER_ERROR
+            exceptions: java.io.IOException,java.util.concurrent.TimeoutException
+            backoff:
+              firstBackoff: 500ms
+              maxBackoff: 5000ms
+              factor: 2
+              basedOnPreviousValue: false
+
+# Service URLs
+services:
+  auth-service:
+    url: ${AUTH_SERVICE_URL:http://localhost:8081}
+  profile-service:
+    url: ${PROFILE_SERVICE_URL:http://localhost:8082}
+  match-service:
+    url: ${MATCH_SERVICE_URL:http://localhost:8083}
+  notification-service:
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:YourJwtSecretKeyHereMakeThisLongEnoughForSecurity}
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      auth-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      profile-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      match-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      notification-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  timelimiter:
+    instances:
+      auth-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      profile-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      match-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      notification-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    com.roomiematcher: DEBUG
+    org.springframework.cloud.gateway: INFO
+    org.springframework.web: INFO 

@@ -1,0 +1,44 @@
+server:
+  port: ${PORT:8083}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+
+# Service endpoints for Feign clients
+services:
+  profile-service:
+    url: ${PROFILE_SERVICE_URL:http://profile-service:8082}
+  notification-service:
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+
+# Disable API docs in production
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+
+# Logging
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.roomiematcher: ${LOG_LEVEL:INFO}
+    org.springframework.web: WARN
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" 

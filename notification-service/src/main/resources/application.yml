@@ -1,0 +1,55 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: notification-service
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your_email@gmail.com}
+    password: ${MAIL_PASSWORD:your_app_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/email/
+    suffix: .html
+    mode: HTML
+
+# AWS SES Configuration (used only when notification.provider=aws-ses)
+aws:
+  ses:
+    enabled: ${AWS_SES_ENABLED:false}
+    access-key: ${AWS_SES_ACCESS_KEY:your_access_key}
+    secret-key: ${AWS_SES_SECRET_KEY:your_secret_key}
+    region: ${AWS_SES_REGION:us-east-1}
+    from-email: ${AWS_SES_FROM_EMAIL:no-reply@roomiematcher.com}
+
+# Email Provider Configuration
+notification:
+  provider: standard # standard, aws-ses
+
+# OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# Logging
+logging:
+  level:
+    com.roomiematcher: INFO
+    org.springframework: WARN
+    org.springframework.web: INFO
+
+jwt:
+  secret: ${JWT_SECRET:your_jwt_secret_key_here} 

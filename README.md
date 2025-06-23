@@ -1,5 +1,129 @@
+# RoomieMatcher Microservices
 
-# 🚀 RoomieMatcher – Intelligent Roommate Matching System
+RoomieMatcher is a platform that helps users find compatible roommates based on preferences like budget, location, cleanliness, noise tolerance, and more.
+
+This project is a microservices implementation of the RoomieMatcher application, transformed from a monolithic Spring Boot application.
+
+## Architecture
+
+The application is divided into the following microservices:
+
+1. **Auth Service**: Handles user registration, authentication, and account verification
+2. **Profile Service**: Manages tenant profiles and preferences
+3. **Match Service**: Implements the roommate matching algorithm
+4. **Notification Service**: Sends email notifications
+5. **API Gateway**: Routes requests to appropriate services
+
+## Technology Stack
+
+- **Java 17**: Programming language
+- **Spring Boot 3.2.0**: Application framework
+- **Spring Cloud**: Microservices ecosystem
+- **Spring Security**: Authentication and authorization
+- **PostgreSQL**: Database
+- **Flyway**: Database migrations
+- **Docker**: Containerization
+- **AWS**: Deployment platform
+
+## Local Development
+
+### Prerequisites
+
+- Java 17
+- Maven
+- Docker and Docker Compose
+- Git
+
+### Running Locally
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/roomiematcher.git
+   cd roomiematcher
+   ```
+
+2. Start the services using Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. The services will be available at:
+   - API Gateway: http://localhost:8080
+   - Auth Service: http://localhost:8081
+   - Profile Service: http://localhost:8082
+   - Match Service: http://localhost:8083
+   - Notification Service: http://localhost:8084
+
+### Development Workflow
+
+1. Make changes to a service
+2. Build the service:
+   ```bash
+   cd <service-directory>
+   mvn clean package
+   ```
+3. Rebuild the Docker container:
+   ```bash
+   docker-compose build <service-name>
+   docker-compose up -d <service-name>
+   ```
+
+## API Documentation
+
+Each service has its own Swagger UI documentation available at `/swagger-ui.html` endpoint.
+
+- API Gateway: http://localhost:8080/swagger-ui.html
+- Auth Service: http://localhost:8081/swagger-ui.html
+- Profile Service: http://localhost:8082/swagger-ui.html
+- Match Service: http://localhost:8083/swagger-ui.html
+- Notification Service: http://localhost:8084/swagger-ui.html
+
+## Deployment
+
+The application can be deployed to AWS using the provided CloudFormation templates and scripts.
+
+For detailed deployment instructions, see:
+- [AWS Deployment Guide](deployment/AWS_DEPLOYMENT_GUIDE.md)
+- [AWS Deployment Quick Start](deployment/AWS_DEPLOYMENT_QUICK_START.md)
+
+## Project Structure
+
+```
+roomiematcher/
+├── api-gateway-service/      # API Gateway microservice
+├── auth-service/             # Authentication microservice
+├── common-lib/               # Shared library with DTOs and utilities
+├── deployment/               # Deployment scripts and CloudFormation templates
+├── docker-compose.yml        # Local development setup
+├── init-db/                  # Database initialization scripts
+├── match-service/            # Match algorithm microservice
+├── notification-service/     # Email notification microservice
+├── pom.xml                   # Parent Maven POM file
+└── profile-service/          # User profile microservice
+```
+
+## Features
+
+- User registration and authentication with email verification
+- Tenant profile creation and management
+- Roommate matching based on compatibility factors
+- Email notifications for account verification and matches
+- JWT-based authentication
+- API gateway with rate limiting and circuit breaking
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -am 'Add new feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🚀 RoomieMatcher – Intelligent Roommate Matching System
 
 RoomieMatcher is a web application that helps users find compatible roommates based on their preferences and lifestyle choices. The application uses an intelligent matching algorithm to calculate compatibility scores between potential roommates.
 
@@ -138,8 +262,6 @@ Sahana H J
 - Email functionality is configured in development mode by default
 - Sample OTPs are printed to the console for testing
 - To enable actual email sending, update the email configuration in `application.properties` 
-=======
-
 
 ## ▶️ Run the Application
 ### Option 1: With Maven Wrapper
@@ -175,8 +297,6 @@ You can modify this to add more tenants.
 - **Interfaces**: `MatchingAlgorithm` is implemented by `BasicMatching`
 - **Thread**: Background data cleaning simulated in `RoommateService`
 ---
-
-
 
 ## 📬 Contact
 For support or suggestions, open an issue ,please  contact sahanahj5711@gmail.com

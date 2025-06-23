@@ -1,0 +1,47 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: match-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/roomie_match
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:YourJwtSecretKeyHereMakeThisLongEnoughForSecurity}
+  expiration: 86400000 # 24 hours
+
+# Service endpoints for Feign clients
+services:
+  profile-service:
+    url: ${PROFILE_SERVICE_URL:http://localhost:8082/api/v1}
+
+# OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Logging
+logging:
+  level:
+    com.roomiematcher: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: ERROR 

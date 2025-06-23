@@ -1,0 +1,62 @@
+[
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "SPRING_PROFILES_ACTIVE",
+    "Value": "prod"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "JWT_SECRET",
+    "Value": "your-jwt-secret-here"
+  },
+  {
+    "Namespace": "aws:autoscaling:launchconfiguration",
+    "OptionName": "InstanceType",
+    "Value": "t2.micro"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment",
+    "OptionName": "LoadBalancerType",
+    "Value": "classic"
+  },
+  {
+    "Namespace": "aws:autoscaling:asg",
+    "OptionName": "MinSize",
+    "Value": "1"
+  },
+  {
+    "Namespace": "aws:autoscaling:asg",
+    "OptionName": "MaxSize",
+    "Value": "2"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+    "OptionName": "SystemType",
+    "Value": "enhanced"
+  },
+  {
+    "Namespace": "aws:elb:policies",
+    "OptionName": "ConnectionDrainingEnabled",
+    "Value": "true"
+  },
+  {
+    "Namespace": "aws:elb:policies",
+    "OptionName": "ConnectionDrainingTimeout",
+    "Value": "20"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:command",
+    "OptionName": "DeploymentPolicy",
+    "Value": "Rolling"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:command",
+    "OptionName": "BatchSizeType",
+    "Value": "Percentage"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:command",
+    "OptionName": "BatchSize",
+    "Value": "30"
+  }
+] 

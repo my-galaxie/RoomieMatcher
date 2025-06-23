@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'RoomieMatcher - ECS Services'
+
+Parameters:
+  EnvironmentName:
+    Description: Environment name (dev, staging, prod)
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  
+  AuthServiceImage:
+    Description: Auth Service Docker image URI
+    Type: String
+  
+  ProfileServiceImage:
+    Description: Profile Service Docker image URI
+    Type: String
+  
+  MatchServiceImage:
+    Description: Match Service Docker image URI
+    Type: String
+  
+  NotificationServiceImage:
+    Description: Notification Service Docker image URI
+    Type: String
+  
+  ApiGatewayImage:
+    Description: API Gateway Docker image URI
+    Type: String
+  
+  JwtSecret:
+    Description: Secret for JWT token signing
+    Type: String
+    NoEcho: true
+  
+  DBMasterUsername:
+    Description: Database master username
+    Type: String
+    Default: postgres
+    NoEcho: false
+  
+  DBMasterPassword:
+    Description: Database master password
+    Type: String
+    NoEcho: true
+  
+  AwsSesAccessKey:
+    Description: AWS SES Access Key
+    Type: String
+    NoEcho: true
+  
+  AwsSesSecretKey:
+    Description: AWS SES Secret Key
+    Type: String
+    NoEcho: true
+  
+  AwsSesRegion:
+    Description: AWS SES Region
+    Type: String
+    Default: us-east-1
+  
+  AwsSesFromEmail:
+    Description: AWS SES From Email
+    Type: String
+    Default: no-reply@roomiematcher.com
+
+Resources:
+  # Service Discovery Services
+  AuthServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: auth-service
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        NamespaceId: 
+          Fn::ImportValue: !Sub ${EnvironmentName}-ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  ProfileServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: profile-service
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        NamespaceId: 
+          Fn::ImportValue: !Sub ${EnvironmentName}-ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  MatchServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: match-service
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        NamespaceId: 
+          Fn::ImportValue: !Sub ${EnvironmentName}-ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  NotificationServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: notification-service
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        NamespaceId: 
+          Fn::ImportValue: !Sub ${EnvironmentName}-ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  ApiGatewayServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: api-gateway
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        NamespaceId: 
+          Fn::ImportValue: !Sub ${EnvironmentName}-ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+Conditions:
+  IsProd: !Equals [!Ref EnvironmentName, 'prod']
+
+Outputs:
+  AuthServiceDiscovery:
+    Description: Auth Service Discovery ARN
+    Value: !GetAtt AuthServiceDiscovery.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-AuthServiceDiscovery
+  
+  ProfileServiceDiscovery:
+    Description: Profile Service Discovery ARN
+    Value: !GetAtt ProfileServiceDiscovery.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-ProfileServiceDiscovery
+  
+  MatchServiceDiscovery:
+    Description: Match Service Discovery ARN
+    Value: !GetAtt MatchServiceDiscovery.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-MatchServiceDiscovery
+  
+  NotificationServiceDiscovery:
+    Description: Notification Service Discovery ARN
+    Value: !GetAtt NotificationServiceDiscovery.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-NotificationServiceDiscovery
+  
+  ApiGatewayServiceDiscovery:
+    Description: API Gateway Service Discovery ARN
+    Value: !GetAtt ApiGatewayServiceDiscovery.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-ApiGatewayServiceDiscovery 

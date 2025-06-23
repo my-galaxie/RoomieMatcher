@@ -1,0 +1,263 @@
+{
+  "AWSEBDockerrunVersion": "2",
+  "volumes": [
+    {
+      "name": "postgres-data",
+      "host": {
+        "sourcePath": "/var/app/current/postgres-data"
+      }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "postgres",
+      "image": "postgres:15-alpine",
+      "essential": true,
+      "memory": 256,
+      "mountPoints": [
+        {
+          "sourceVolume": "postgres-data",
+          "containerPath": "/var/lib/postgresql/data"
+        }
+      ],
+      "portMappings": [
+        {
+          "hostPort": 5432,
+          "containerPort": 5432
+        }
+      ],
+      "environment": [
+        {
+          "name": "POSTGRES_USER",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_MULTIPLE_DATABASES",
+          "value": "auth_db,profile_db,match_db,notification_db"
+        }
+      ]
+    },
+    {
+      "name": "api-gateway",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-api-gateway:latest",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8080
+        }
+      ],
+      "links": [
+        "auth-service",
+        "profile-service",
+        "match-service",
+        "notification-service"
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "your_jwt_secret_key_here"
+        },
+        {
+          "name": "AUTH_SERVICE_URL",
+          "value": "http://auth-service:8081"
+        },
+        {
+          "name": "PROFILE_SERVICE_URL",
+          "value": "http://profile-service:8082"
+        },
+        {
+          "name": "MATCH_SERVICE_URL",
+          "value": "http://match-service:8083"
+        },
+        {
+          "name": "NOTIFICATION_SERVICE_URL",
+          "value": "http://notification-service:8084"
+        }
+      ]
+    },
+    {
+      "name": "auth-service",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-auth-service:latest",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 8081,
+          "containerPort": 8081
+        }
+      ],
+      "links": [
+        "postgres"
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/auth_db"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "postgres"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "postgres"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "your_jwt_secret_key_here"
+        },
+        {
+          "name": "JWT_EXPIRATION",
+          "value": "86400000"
+        }
+      ]
+    },
+    {
+      "name": "profile-service",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-profile-service:latest",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 8082,
+          "containerPort": 8082
+        }
+      ],
+      "links": [
+        "postgres",
+        "auth-service"
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/profile_db"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "postgres"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "postgres"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "your_jwt_secret_key_here"
+        }
+      ]
+    },
+    {
+      "name": "match-service",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-match-service:latest",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 8083,
+          "containerPort": 8083
+        }
+      ],
+      "links": [
+        "postgres",
+        "profile-service"
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/match_db"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "postgres"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "postgres"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "your_jwt_secret_key_here"
+        }
+      ]
+    },
+    {
+      "name": "notification-service",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-notification-service:latest",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 8084,
+          "containerPort": 8084
+        }
+      ],
+      "links": [
+        "postgres"
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://postgres:5432/notification_db"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "postgres"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "postgres"
+        },
+        {
+          "name": "MAIL_HOST",
+          "value": "smtp.gmail.com"
+        },
+        {
+          "name": "MAIL_PORT",
+          "value": "587"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "value": "your_email@gmail.com"
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "value": "your_app_password"
+        },
+        {
+          "name": "MAIL_PROPERTIES_MAIL_SMTP_AUTH",
+          "value": "true"
+        },
+        {
+          "name": "MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE",
+          "value": "true"
+        }
+      ]
+    }
+  ]
+} 

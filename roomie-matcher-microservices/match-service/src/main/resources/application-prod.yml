@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: ${MATCH_DB_URL}
+    username: ${MATCH_DB_USERNAME}
+    password: ${MATCH_DB_PASSWORD}
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+
+# Service endpoints for Feign clients
+services:
+  profile-service:
+    url: ${PROFILE_SERVICE_URL}
+
+# Logging
+logging:
+  level:
+    com.roomiematcher: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN 

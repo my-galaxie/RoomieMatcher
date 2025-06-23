@@ -1,0 +1,49 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: ${ALLOWED_ORIGINS:https://roomiematcher.com}
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      metrics:
+        enabled: true
+
+# Service URLs
+services:
+  auth-service:
+    url: ${AUTH_SERVICE_URL}
+  profile-service:
+    url: ${PROFILE_SERVICE_URL}
+  match-service:
+    url: ${MATCH_SERVICE_URL}
+  notification-service:
+    url: ${NOTIFICATION_SERVICE_URL}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# Logging
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.roomiematcher: ${LOG_LEVEL:INFO}
+    org.springframework.cloud.gateway: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" 

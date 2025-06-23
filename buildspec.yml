@@ -1,0 +1,44 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Maven project...
+      - mvn clean install
+      - echo Building the Docker images...
+      - docker build -t $REPOSITORY_URI/roomiematcher-api-gateway:$IMAGE_TAG ./api-gateway-service
+      - docker build -t $REPOSITORY_URI/roomiematcher-auth-service:$IMAGE_TAG ./auth-service
+      - docker build -t $REPOSITORY_URI/roomiematcher-profile-service:$IMAGE_TAG ./profile-service
+      - docker build -t $REPOSITORY_URI/roomiematcher-match-service:$IMAGE_TAG ./match-service
+      - docker build -t $REPOSITORY_URI/roomiematcher-notification-service:$IMAGE_TAG ./notification-service
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI/roomiematcher-api-gateway:$IMAGE_TAG
+      - docker push $REPOSITORY_URI/roomiematcher-auth-service:$IMAGE_TAG
+      - docker push $REPOSITORY_URI/roomiematcher-profile-service:$IMAGE_TAG
+      - docker push $REPOSITORY_URI/roomiematcher-match-service:$IMAGE_TAG
+      - docker push $REPOSITORY_URI/roomiematcher-notification-service:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - aws cloudformation package --template-file deployment/cloudformation/services/ecs-services.yaml --s3-bucket $S3_BUCKET --s3-prefix $S3_PREFIX --output-template-file outputtemplate.yaml
+      - sed -i "s|\${AWS_ACCOUNT_ID}|$AWS_ACCOUNT_ID|g" Dockerrun.aws.json
+      - sed -i "s|\${AWS_REGION}|$AWS_DEFAULT_REGION|g" Dockerrun.aws.json
+
+artifacts:
+  files:
+    - Dockerrun.aws.json
+    - .ebextensions/**/*
+    - outputtemplate.yaml
+  discard-paths: no 

@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # PostgreSQL databases
+  postgres:
+    image: postgres:15-alpine
+    container_name: roomie-matcher-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: auth_db,profile_db,match_db,notification_db
+    volumes:
+      - ./init-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    container_name: roomie-matcher-auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=your_jwt_secret_key_here
+      - JWT_EXPIRATION=86400000
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Profile Service
+  profile-service:
+    build: ./profile-service
+    container_name: roomie-matcher-profile-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/profile_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=your_jwt_secret_key_here
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+
+  # Match Service
+  match-service:
+    build: ./match-service
+    container_name: roomie-matcher-match-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/match_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=your_jwt_secret_key_here
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      profile-service:
+        condition: service_started
+
+  # Notification Service
+  notification-service:
+    build: ./notification-service
+    container_name: roomie-matcher-notification-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/notification_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=your_email@gmail.com
+      - MAIL_PASSWORD=your_app_password
+      - MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway-service
+    container_name: roomie-matcher-api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - JWT_SECRET=your_jwt_secret_key_here
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - PROFILE_SERVICE_URL=http://profile-service:8082
+      - MATCH_SERVICE_URL=http://match-service:8083
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8084
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - profile-service
+      - match-service
+      - notification-service
+
+volumes:
+  postgres-data:
