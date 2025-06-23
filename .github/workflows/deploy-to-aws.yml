@@ -57,9 +57,33 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          AWS_SES_ACCESS_KEY: ${{ secrets.AWS_SES_ACCESS_KEY }}
+          AWS_SES_SECRET_KEY: ${{ secrets.AWS_SES_SECRET_KEY }}
+          AWS_SES_REGION: ${{ secrets.AWS_SES_REGION }}
+          AWS_SES_FROM_EMAIL: ${{ secrets.AWS_SES_FROM_EMAIL }}
+          NOTIFICATION_PROVIDER: ${{ secrets.NOTIFICATION_PROVIDER }}
         run: |
           sed -i "s|\${AWS_ACCOUNT_ID}|$AWS_ACCOUNT_ID|g" Dockerrun.aws.json
           sed -i "s|\${AWS_REGION}|$AWS_REGION|g" Dockerrun.aws.json
+          sed -i "s|\${JWT_SECRET}|$JWT_SECRET|g" Dockerrun.aws.json
+          sed -i "s|\${DB_USERNAME}|$DB_USERNAME|g" Dockerrun.aws.json
+          sed -i "s|\${DB_PASSWORD}|$DB_PASSWORD|g" Dockerrun.aws.json
+          sed -i "s|\${MAIL_HOST}|$MAIL_HOST|g" Dockerrun.aws.json
+          sed -i "s|\${MAIL_PORT}|$MAIL_PORT|g" Dockerrun.aws.json
+          sed -i "s|\${MAIL_USERNAME}|$MAIL_USERNAME|g" Dockerrun.aws.json
+          sed -i "s|\${MAIL_PASSWORD}|$MAIL_PASSWORD|g" Dockerrun.aws.json
+          sed -i "s|\${AWS_SES_ACCESS_KEY}|$AWS_SES_ACCESS_KEY|g" Dockerrun.aws.json
+          sed -i "s|\${AWS_SES_SECRET_KEY}|$AWS_SES_SECRET_KEY|g" Dockerrun.aws.json
+          sed -i "s|\${AWS_SES_REGION}|$AWS_SES_REGION|g" Dockerrun.aws.json
+          sed -i "s|\${AWS_SES_FROM_EMAIL}|$AWS_SES_FROM_EMAIL|g" Dockerrun.aws.json
+          sed -i "s|\${NOTIFICATION_PROVIDER}|$NOTIFICATION_PROVIDER|g" Dockerrun.aws.json
       
       - name: Generate deployment package
         run: |

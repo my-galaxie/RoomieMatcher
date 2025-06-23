@@ -29,11 +29,11 @@
       "environment": [
         {
           "name": "POSTGRES_USER",
-          "value": "postgres"
+          "value": "${DB_USERNAME}"
         },
         {
           "name": "POSTGRES_PASSWORD",
-          "value": "postgres"
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "POSTGRES_MULTIPLE_DATABASES",
@@ -65,7 +65,7 @@
         },
         {
           "name": "JWT_SECRET",
-          "value": "your_jwt_secret_key_here"
+          "value": "${JWT_SECRET}"
         },
         {
           "name": "AUTH_SERVICE_URL",
@@ -110,15 +110,15 @@
         },
         {
           "name": "SPRING_DATASOURCE_USERNAME",
-          "value": "postgres"
+          "value": "${DB_USERNAME}"
         },
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "value": "postgres"
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
-          "value": "your_jwt_secret_key_here"
+          "value": "${JWT_SECRET}"
         },
         {
           "name": "JWT_EXPIRATION",
@@ -152,15 +152,15 @@
         },
         {
           "name": "SPRING_DATASOURCE_USERNAME",
-          "value": "postgres"
+          "value": "${DB_USERNAME}"
         },
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "value": "postgres"
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
-          "value": "your_jwt_secret_key_here"
+          "value": "${JWT_SECRET}"
         }
       ]
     },
@@ -190,15 +190,15 @@
         },
         {
           "name": "SPRING_DATASOURCE_USERNAME",
-          "value": "postgres"
+          "value": "${DB_USERNAME}"
         },
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "value": "postgres"
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
-          "value": "your_jwt_secret_key_here"
+          "value": "${JWT_SECRET}"
         }
       ]
     },
@@ -227,27 +227,47 @@
         },
         {
           "name": "SPRING_DATASOURCE_USERNAME",
-          "value": "postgres"
+          "value": "${DB_USERNAME}"
         },
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "value": "postgres"
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "MAIL_HOST",
-          "value": "smtp.gmail.com"
+          "value": "${MAIL_HOST}"
         },
         {
           "name": "MAIL_PORT",
-          "value": "587"
+          "value": "${MAIL_PORT}"
         },
         {
           "name": "MAIL_USERNAME",
-          "value": "your_email@gmail.com"
+          "value": "${MAIL_USERNAME}"
         },
         {
           "name": "MAIL_PASSWORD",
-          "value": "your_app_password"
+          "value": "${MAIL_PASSWORD}"
+        },
+        {
+          "name": "AWS_SES_ACCESS_KEY",
+          "value": "${AWS_SES_ACCESS_KEY}"
+        },
+        {
+          "name": "AWS_SES_SECRET_KEY",
+          "value": "${AWS_SES_SECRET_KEY}"
+        },
+        {
+          "name": "AWS_SES_REGION",
+          "value": "${AWS_SES_REGION}"
+        },
+        {
+          "name": "AWS_SES_FROM_EMAIL",
+          "value": "${AWS_SES_FROM_EMAIL}"
+        },
+        {
+          "name": "NOTIFICATION_PROVIDER",
+          "value": "${NOTIFICATION_PROVIDER}"
         },
         {
           "name": "MAIL_PROPERTIES_MAIL_SMTP_AUTH",

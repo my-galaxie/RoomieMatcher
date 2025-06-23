@@ -16,7 +16,7 @@ The project structure has been consolidated to use only the root directory struc
 To complete the cleanup, run the provided script:
 ```bash
 chmod +x cleanup-duplicates.sh
-./cleanup-duplicates.sh
+./cleanup-duplicates.sh -y
 ```
 
 ## Architecture
@@ -93,13 +93,46 @@ Each service has its own Swagger UI documentation available at `/swagger-ui.html
 - Match Service: http://localhost:8083/swagger-ui.html
 - Notification Service: http://localhost:8084/swagger-ui.html
 
-## Deployment
+## AWS Elastic Beanstalk Deployment
 
-The application can be deployed to AWS using the provided CloudFormation templates and scripts.
+### Prerequisites
 
-For detailed deployment instructions, see:
-- [AWS Deployment Guide](deployment/AWS_DEPLOYMENT_GUIDE.md)
-- [AWS Deployment Quick Start](deployment/AWS_DEPLOYMENT_QUICK_START.md)
+- AWS Account
+- AWS CLI installed and configured
+- GitHub account (for GitHub Actions deployment)
+
+### Deployment Options
+
+#### Option 1: Using GitHub Actions
+
+1. Set up the required GitHub secrets as described in [DEPLOYMENT_SECRETS.md](DEPLOYMENT_SECRETS.md)
+2. Push your changes to the main branch
+3. GitHub Actions will automatically deploy to AWS Elastic Beanstalk
+
+#### Option 2: Manual Deployment
+
+1. Use the provided deployment script:
+   ```bash
+   chmod +x deploy-to-beanstalk.sh
+   ./deploy-to-beanstalk.sh --bucket your-s3-bucket-name --region your-aws-region
+   ```
+
+2. Monitor the deployment in the AWS Elastic Beanstalk console
+
+### Deployment Documentation
+
+For detailed deployment instructions, refer to:
+
+- [AWS Beanstalk Deployment Guide](aws-beanstalk-deployment-guide.md): Comprehensive guide with step-by-step instructions
+- [AWS Beanstalk Quick Start](aws-beanstalk-quickstart.md): Quick start guide for rapid deployment
+- [AWS Beanstalk Cost Optimization](aws-beanstalk-cost-optimization.md): Tips for optimizing costs
+
+## Security Considerations
+
+- All sensitive information (JWT secrets, database credentials, AWS keys) should be stored as environment variables or AWS secrets
+- Do not commit any sensitive information to the repository
+- Use IAM roles with least privilege principle
+- Enable HTTPS for all communications
 
 ## Project Structure
 
