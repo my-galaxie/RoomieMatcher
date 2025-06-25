@@ -38,6 +38,62 @@ public class TenantProfile {
     @Column(name = "gender")
     private String gender;
     
+    @Column(name = "daily_schedule")
+    @Enumerated(EnumType.STRING)
+    private DailySchedule dailySchedule;
+    
+    @Column(name = "guest_frequency")
+    @Enumerated(EnumType.STRING)
+    private GuestFrequency guestFrequency;
+    
+    @Column(name = "cooking_habits")
+    @Enumerated(EnumType.STRING)
+    private CookingHabits cookingHabits;
+    
+    @Column(name = "music_noise")
+    @Enumerated(EnumType.STRING)
+    private MusicNoise musicNoise;
+    
+    @Column(name = "cleaning_frequency")
+    @Enumerated(EnumType.STRING)
+    private CleaningFrequency cleaningFrequency;
+    
+    @Column(name = "social_style")
+    @Enumerated(EnumType.STRING)
+    private SocialStyle socialStyle;
+    
+    @Column(name = "temperature_preference")
+    @Enumerated(EnumType.STRING)
+    private TemperaturePreference temperaturePreference;
+    
+    @Column(name = "lighting_preference")
+    @Enumerated(EnumType.STRING)
+    private LightingPreference lightingPreference;
+    
+    @Column(name = "pet_compatibility")
+    @Enumerated(EnumType.STRING)
+    private PetCompatibility petCompatibility;
+    
+    @Column(name = "smoking_preference")
+    @Enumerated(EnumType.STRING)
+    private SmokingPreference smokingPreference;
+    
+    @Column(name = "parking_needs")
+    @Enumerated(EnumType.STRING)
+    private ParkingNeeds parkingNeeds;
+    
+    @Column(name = "overnight_guests")
+    @Enumerated(EnumType.STRING)
+    private OvernightGuests overnightGuests;
+    
+    @Column(name = "work_from_home")
+    @Enumerated(EnumType.STRING)
+    private WorkFromHome workFromHome;
+    
+    @Column(name = "allergies")
+    @Enumerated(EnumType.STRING)
+    private Allergies allergies;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -52,6 +108,13 @@ public class TenantProfile {
     
     public TenantProfile(Long id, Long userId, Double budget, String location, Integer cleanlinessLevel, 
                          Integer noiseTolerance, Boolean smoking, Boolean pets, String gender,
+                         DailySchedule dailySchedule, GuestFrequency guestFrequency, 
+                         CookingHabits cookingHabits, MusicNoise musicNoise,
+                         CleaningFrequency cleaningFrequency, SocialStyle socialStyle,
+                         TemperaturePreference temperaturePreference, LightingPreference lightingPreference,
+                         PetCompatibility petCompatibility, SmokingPreference smokingPreference,
+                         ParkingNeeds parkingNeeds, OvernightGuests overnightGuests,
+                         WorkFromHome workFromHome, Allergies allergies,
                          LocalDateTime createdAt, LocalDateTime updatedAt, Set<PreferredGender> preferredGenders) {
         this.id = id;
         this.userId = userId;
@@ -62,6 +125,20 @@ public class TenantProfile {
         this.smoking = smoking;
         this.pets = pets;
         this.gender = gender;
+        this.dailySchedule = dailySchedule;
+        this.guestFrequency = guestFrequency;
+        this.cookingHabits = cookingHabits;
+        this.musicNoise = musicNoise;
+        this.cleaningFrequency = cleaningFrequency;
+        this.socialStyle = socialStyle;
+        this.temperaturePreference = temperaturePreference;
+        this.lightingPreference = lightingPreference;
+        this.petCompatibility = petCompatibility;
+        this.smokingPreference = smokingPreference;
+        this.parkingNeeds = parkingNeeds;
+        this.overnightGuests = overnightGuests;
+        this.workFromHome = workFromHome;
+        this.allergies = allergies;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.preferredGenders = preferredGenders != null ? preferredGenders : new HashSet<>();
@@ -163,6 +240,118 @@ public class TenantProfile {
         this.gender = gender;
     }
     
+    public DailySchedule getDailySchedule() {
+        return dailySchedule;
+    }
+    
+    public void setDailySchedule(DailySchedule dailySchedule) {
+        this.dailySchedule = dailySchedule;
+    }
+    
+    public GuestFrequency getGuestFrequency() {
+        return guestFrequency;
+    }
+    
+    public void setGuestFrequency(GuestFrequency guestFrequency) {
+        this.guestFrequency = guestFrequency;
+    }
+    
+    public CookingHabits getCookingHabits() {
+        return cookingHabits;
+    }
+    
+    public void setCookingHabits(CookingHabits cookingHabits) {
+        this.cookingHabits = cookingHabits;
+    }
+    
+    public MusicNoise getMusicNoise() {
+        return musicNoise;
+    }
+    
+    public void setMusicNoise(MusicNoise musicNoise) {
+        this.musicNoise = musicNoise;
+    }
+    
+    public CleaningFrequency getCleaningFrequency() {
+        return cleaningFrequency;
+    }
+    
+    public void setCleaningFrequency(CleaningFrequency cleaningFrequency) {
+        this.cleaningFrequency = cleaningFrequency;
+    }
+    
+    public SocialStyle getSocialStyle() {
+        return socialStyle;
+    }
+    
+    public void setSocialStyle(SocialStyle socialStyle) {
+        this.socialStyle = socialStyle;
+    }
+    
+    public TemperaturePreference getTemperaturePreference() {
+        return temperaturePreference;
+    }
+    
+    public void setTemperaturePreference(TemperaturePreference temperaturePreference) {
+        this.temperaturePreference = temperaturePreference;
+    }
+    
+    public LightingPreference getLightingPreference() {
+        return lightingPreference;
+    }
+    
+    public void setLightingPreference(LightingPreference lightingPreference) {
+        this.lightingPreference = lightingPreference;
+    }
+    
+    public PetCompatibility getPetCompatibility() {
+        return petCompatibility;
+    }
+    
+    public void setPetCompatibility(PetCompatibility petCompatibility) {
+        this.petCompatibility = petCompatibility;
+    }
+    
+    public SmokingPreference getSmokingPreference() {
+        return smokingPreference;
+    }
+    
+    public void setSmokingPreference(SmokingPreference smokingPreference) {
+        this.smokingPreference = smokingPreference;
+    }
+    
+    public ParkingNeeds getParkingNeeds() {
+        return parkingNeeds;
+    }
+    
+    public void setParkingNeeds(ParkingNeeds parkingNeeds) {
+        this.parkingNeeds = parkingNeeds;
+    }
+    
+    public OvernightGuests getOvernightGuests() {
+        return overnightGuests;
+    }
+    
+    public void setOvernightGuests(OvernightGuests overnightGuests) {
+        this.overnightGuests = overnightGuests;
+    }
+    
+    public WorkFromHome getWorkFromHome() {
+        return workFromHome;
+    }
+    
+    public void setWorkFromHome(WorkFromHome workFromHome) {
+        this.workFromHome = workFromHome;
+    }
+    
+    public Allergies getAllergies() {
+        return allergies;
+    }
+    
+    public void setAllergies(Allergies allergies) {
+        this.allergies = allergies;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -202,6 +391,20 @@ public class TenantProfile {
         private Boolean smoking;
         private Boolean pets;
         private String gender;
+        private DailySchedule dailySchedule;
+        private GuestFrequency guestFrequency;
+        private CookingHabits cookingHabits;
+        private MusicNoise musicNoise;
+        private CleaningFrequency cleaningFrequency;
+        private SocialStyle socialStyle;
+        private TemperaturePreference temperaturePreference;
+        private LightingPreference lightingPreference;
+        private PetCompatibility petCompatibility;
+        private SmokingPreference smokingPreference;
+        private ParkingNeeds parkingNeeds;
+        private OvernightGuests overnightGuests;
+        private WorkFromHome workFromHome;
+        private Allergies allergies;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private Set<PreferredGender> preferredGenders = new HashSet<>();
@@ -251,6 +454,76 @@ public class TenantProfile {
             return this;
         }
         
+        public TenantProfileBuilder dailySchedule(DailySchedule dailySchedule) {
+            this.dailySchedule = dailySchedule;
+            return this;
+        }
+        
+        public TenantProfileBuilder guestFrequency(GuestFrequency guestFrequency) {
+            this.guestFrequency = guestFrequency;
+            return this;
+        }
+        
+        public TenantProfileBuilder cookingHabits(CookingHabits cookingHabits) {
+            this.cookingHabits = cookingHabits;
+            return this;
+        }
+        
+        public TenantProfileBuilder musicNoise(MusicNoise musicNoise) {
+            this.musicNoise = musicNoise;
+            return this;
+        }
+        
+        public TenantProfileBuilder cleaningFrequency(CleaningFrequency cleaningFrequency) {
+            this.cleaningFrequency = cleaningFrequency;
+            return this;
+        }
+        
+        public TenantProfileBuilder socialStyle(SocialStyle socialStyle) {
+            this.socialStyle = socialStyle;
+            return this;
+        }
+        
+        public TenantProfileBuilder temperaturePreference(TemperaturePreference temperaturePreference) {
+            this.temperaturePreference = temperaturePreference;
+            return this;
+        }
+        
+        public TenantProfileBuilder lightingPreference(LightingPreference lightingPreference) {
+            this.lightingPreference = lightingPreference;
+            return this;
+        }
+        
+        public TenantProfileBuilder petCompatibility(PetCompatibility petCompatibility) {
+            this.petCompatibility = petCompatibility;
+            return this;
+        }
+        
+        public TenantProfileBuilder smokingPreference(SmokingPreference smokingPreference) {
+            this.smokingPreference = smokingPreference;
+            return this;
+        }
+        
+        public TenantProfileBuilder parkingNeeds(ParkingNeeds parkingNeeds) {
+            this.parkingNeeds = parkingNeeds;
+            return this;
+        }
+        
+        public TenantProfileBuilder overnightGuests(OvernightGuests overnightGuests) {
+            this.overnightGuests = overnightGuests;
+            return this;
+        }
+        
+        public TenantProfileBuilder workFromHome(WorkFromHome workFromHome) {
+            this.workFromHome = workFromHome;
+            return this;
+        }
+        
+        public TenantProfileBuilder allergies(Allergies allergies) {
+            this.allergies = allergies;
+            return this;
+        }
+        
         public TenantProfileBuilder createdAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
@@ -268,7 +541,10 @@ public class TenantProfile {
         
         public TenantProfile build() {
             return new TenantProfile(id, userId, budget, location, cleanlinessLevel, noiseTolerance, 
-                                    smoking, pets, gender, createdAt, updatedAt, preferredGenders);
+                                    smoking, pets, gender, dailySchedule, guestFrequency, cookingHabits, 
+                                    musicNoise, cleaningFrequency, socialStyle, temperaturePreference, 
+                                    lightingPreference, petCompatibility, smokingPreference, parkingNeeds, 
+                                    overnightGuests, workFromHome, allergies, createdAt, updatedAt, preferredGenders);
         }
     }
 } 

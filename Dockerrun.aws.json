@@ -1,51 +1,11 @@
 {
   "AWSEBDockerrunVersion": "2",
-  "volumes": [
-    {
-      "name": "postgres-data",
-      "host": {
-        "sourcePath": "/var/app/current/postgres-data"
-      }
-    }
-  ],
   "containerDefinitions": [
-    {
-      "name": "postgres",
-      "image": "postgres:13",
-      "essential": true,
-      "memory": 256,
-      "mountPoints": [
-        {
-          "sourceVolume": "postgres-data",
-          "containerPath": "/var/lib/postgresql/data"
-        }
-      ],
-      "portMappings": [
-        {
-          "hostPort": 5432,
-          "containerPort": 5432
-        }
-      ],
-      "environment": [
-        {
-          "name": "POSTGRES_USER",
-          "value": "${MASTER_DB_USERNAME}"
-        },
-        {
-          "name": "POSTGRES_PASSWORD",
-          "value": "${MASTER_DB_PASSWORD}"
-        },
-        {
-          "name": "POSTGRES_DB",
-          "value": "postgres"
-        }
-      ]
-    },
     {
       "name": "api-gateway",
       "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-api-gateway:latest",
       "essential": true,
-      "memory": 256,
+      "memory": 128,
       "portMappings": [
         {
           "hostPort": 80,
@@ -82,6 +42,10 @@
         {
           "name": "NOTIFICATION_SERVICE_URL",
           "value": "http://notification-service:8084/api/v1"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xmx96m -Xms48m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled"
         }
       ]
     },
@@ -89,7 +53,7 @@
       "name": "auth-service",
       "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-auth-service:latest",
       "essential": true,
-      "memory": 256,
+      "memory": 128,
       "portMappings": [
         {
           "hostPort": 8081,
@@ -97,7 +61,7 @@
         }
       ],
       "links": [
-        "postgres"
+        "notification-service"
       ],
       "environment": [
         {
@@ -105,16 +69,16 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://${RDS_ENDPOINT}:5432/roomie_auth"
         },
         {
-          "name": "AUTH_DB_USERNAME",
-          "value": "${AUTH_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "AUTH_DB_PASSWORD",
-          "value": "${AUTH_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
@@ -123,6 +87,18 @@
         {
           "name": "NOTIFICATION_SERVICE_URL",
           "value": "http://notification-service:8084/api/v1"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xmx96m -Xms48m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_GENERATE_STATISTICS",
+          "value": "false"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE",
+          "value": "20"
         }
       ]
     },
@@ -130,7 +106,7 @@
       "name": "profile-service",
       "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-profile-service:latest",
       "essential": true,
-      "memory": 256,
+      "memory": 128,
       "portMappings": [
         {
           "hostPort": 8082,
@@ -138,8 +114,8 @@
         }
       ],
       "links": [
-        "postgres",
-        "auth-service"
+        "auth-service",
+        "notification-service"
       ],
       "environment": [
         {
@@ -147,20 +123,32 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://${RDS_ENDPOINT}:5432/roomie_profile"
         },
         {
-          "name": "PROFILE_DB_USERNAME",
-          "value": "${PROFILE_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "PROFILE_DB_PASSWORD",
-          "value": "${PROFILE_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
           "value": "${JWT_SECRET}"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xmx96m -Xms48m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_GENERATE_STATISTICS",
+          "value": "false"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE",
+          "value": "20"
         }
       ]
     },
@@ -168,7 +156,7 @@
       "name": "match-service",
       "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-match-service:latest",
       "essential": true,
-      "memory": 256,
+      "memory": 128,
       "portMappings": [
         {
           "hostPort": 8083,
@@ -176,7 +164,6 @@
         }
       ],
       "links": [
-        "postgres",
         "profile-service"
       ],
       "environment": [
@@ -185,16 +172,16 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://${RDS_ENDPOINT}:5432/roomie_match"
         },
         {
-          "name": "MATCH_DB_USERNAME",
-          "value": "${MATCH_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "MATCH_DB_PASSWORD",
-          "value": "${MATCH_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
@@ -203,6 +190,18 @@
         {
           "name": "PROFILE_SERVICE_URL",
           "value": "http://profile-service:8082/api/v1"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xmx96m -Xms48m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_GENERATE_STATISTICS",
+          "value": "false"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE",
+          "value": "20"
         }
       ]
     },
@@ -210,15 +209,12 @@
       "name": "notification-service",
       "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/roomiematcher-notification-service:latest",
       "essential": true,
-      "memory": 256,
+      "memory": 128,
       "portMappings": [
         {
           "hostPort": 8084,
           "containerPort": 8084
         }
-      ],
-      "links": [
-        "postgres"
       ],
       "environment": [
         {
@@ -226,40 +222,24 @@
           "value": "prod"
         },
         {
-          "name": "RDS_ENDPOINT",
-          "value": "${RDS_ENDPOINT}"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://${RDS_ENDPOINT}:5432/roomie_notification"
         },
         {
-          "name": "NOTIFICATION_DB_USERNAME",
-          "value": "${NOTIFICATION_DB_USERNAME}"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "${DB_USERNAME}"
         },
         {
-          "name": "NOTIFICATION_DB_PASSWORD",
-          "value": "${NOTIFICATION_DB_PASSWORD}"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "${DB_PASSWORD}"
         },
         {
           "name": "JWT_SECRET",
           "value": "${JWT_SECRET}"
         },
         {
-          "name": "MAIL_HOST",
-          "value": "${MAIL_HOST}"
-        },
-        {
-          "name": "MAIL_PORT",
-          "value": "${MAIL_PORT}"
-        },
-        {
-          "name": "MAIL_USERNAME",
-          "value": "${MAIL_USERNAME}"
-        },
-        {
-          "name": "MAIL_PASSWORD",
-          "value": "${MAIL_PASSWORD}"
-        },
-        {
-          "name": "AWS_SES_ENABLED",
-          "value": "${AWS_SES_ENABLED}"
+          "name": "NOTIFICATION_PROVIDER",
+          "value": "aws-ses"
         },
         {
           "name": "AWS_SES_ACCESS_KEY",
@@ -278,8 +258,16 @@
           "value": "${AWS_SES_FROM_EMAIL}"
         },
         {
-          "name": "NOTIFICATION_PROVIDER",
-          "value": "${NOTIFICATION_PROVIDER}"
+          "name": "JAVA_OPTS",
+          "value": "-Xmx96m -Xms48m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_GENERATE_STATISTICS",
+          "value": "false"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE",
+          "value": "20"
         }
       ]
     }

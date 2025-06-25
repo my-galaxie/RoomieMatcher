@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Free Tier RDS PostgreSQL for RoomieMatcher'
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where RDS will be deployed
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: List of subnet IDs for the RDS instance
+
+  DBUsername:
+    Type: String
+    Description: Master username for the RDS instance
+    Default: postgres
+
+  DBPassword:
+    Type: String
+    Description: Master password for the RDS instance
+    NoEcho: true
+
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
+Resources:
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS PostgreSQL
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0  # In production, restrict to your application security group
+      Tags:
+        - Key: Name
+          Value: !Sub 'roomiematcher-${Environment}-db-sg'
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RoomieMatcher RDS
+      SubnetIds: !Ref SubnetIds
+      Tags:
+        - Key: Name
+          Value: !Sub 'roomiematcher-${Environment}-db-subnet-group'
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub 'roomiematcher-${Environment}-db'
+      AllocatedStorage: 20
+      DBInstanceClass: db.t2.micro  # Free Tier eligible instance
+      Engine: postgres
+      EngineVersion: '13.7'
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: postgres
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 1
+      MultiAZ: false  # Disable Multi-AZ to stay within Free Tier
+      PubliclyAccessible: true  # Make accessible for easy connection
+      StorageType: gp2
+      StorageEncrypted: false  # Disable encryption to stay within Free Tier
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: !Sub 'roomiematcher-${Environment}-db'
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  RDSEndpoint:
+    Description: RDS instance endpoint
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSEndpoint'
+
+  RDSPort:
+    Description: RDS instance port
+    Value: !GetAtt RDSInstance.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSPort'
+
+  DBSecurityGroupId:
+    Description: Security group ID for the RDS instance
+    Value: !Ref DBSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-DBSecurityGroupId' 

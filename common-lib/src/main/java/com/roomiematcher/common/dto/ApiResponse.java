@@ -31,6 +31,10 @@ public class ApiResponse<T> {
         return new ApiResponse<T>(false, message, null, LocalDateTime.now());
     }
     
+    public static <T> ApiResponse<T> error(String message, T data) {
+        return new ApiResponse<T>(false, message, data, LocalDateTime.now());
+    }
+    
     // Getters and setters
     public boolean isSuccess() {
         return success;

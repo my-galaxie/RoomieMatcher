@@ -39,4 +39,33 @@ public class TenantProfileRequest {
     private Boolean pets;
     
     private Set<String> preferredGenders;
+    
+    // New tenant preferences
+    private String dailySchedule; // EARLY_BIRD, NIGHT_OWL, FLEXIBLE
+    
+    private String guestFrequency; // NONE, RARELY, SOMETIMES, OFTEN
+    
+    private String cookingHabits; // NONE, OCCASIONAL, FREQUENT
+    
+    private String musicNoise; // SILENT, LOW, MUSIC_LOVER, PARTY_FRIENDLY
+    
+    private String cleaningFrequency; // WEEKLY, BIWEEKLY, DAILY, ON_DEMAND
+    
+    private String socialStyle; // INTROVERT, AMBIVERT, EXTROVERT
+    
+    private String temperaturePreference; // COOL, MODERATE, WARM
+    
+    private String lightingPreference; // DIM, MODERATE, BRIGHT
+    
+    private String petCompatibility; // NONE, DOG_LOVER, CAT_LOVER, OTHER
+    
+    private String smokingPreference; // NON_SMOKER, OCCASIONAL, REGULAR
+    
+    private String parkingNeeds; // NONE, BIKE, CAR
+    
+    private String overnightGuests; // NONE, OCCASIONAL, FREQUENT
+    
+    private String workFromHome; // NONE, HYBRID, FULL_TIME
+    
+    private String allergies; // NONE, POLLEN, PETS, FOOD
 } 

@@ -1,9 +1,11 @@
 package com.roomiematcher.common.dto.notification;
 
 import java.util.Map;
+import java.util.List;
+import java.util.Collections;
 
 public class EmailRequestDTO {
-    private String to;
+    private List<String> to;
     private String subject;
     private String body;
     private String template;
@@ -14,7 +16,7 @@ public class EmailRequestDTO {
     public EmailRequestDTO() {
     }
     
-    public EmailRequestDTO(String to, String subject, String body, String template, Map<String, Object> templateVariables, EmailType type, boolean isHtml) {
+    public EmailRequestDTO(List<String> to, String subject, String body, String template, Map<String, Object> templateVariables, EmailType type, boolean isHtml) {
         this.to = to;
         this.subject = subject;
         this.body = body;
@@ -24,12 +26,28 @@ public class EmailRequestDTO {
         this.isHtml = isHtml;
     }
     
-    public String getTo() {
+    // Convenience constructor for single recipient
+    public EmailRequestDTO(String to, String subject, String body, String template, Map<String, Object> templateVariables, EmailType type, boolean isHtml) {
+        this.to = Collections.singletonList(to);
+        this.subject = subject;
+        this.body = body;
+        this.template = template;
+        this.templateVariables = templateVariables;
+        this.type = type;
+        this.isHtml = isHtml;
+    }
+    
+    public List<String> getTo() {
         return to;
     }
     
-    public void setTo(String to) {
+    public void setTo(List<String> to) {
         this.to = to;
+    }
+    
+    // Convenience method for setting a single recipient
+    public void setTo(String to) {
+        this.to = Collections.singletonList(to);
     }
     
     public String getSubject() {

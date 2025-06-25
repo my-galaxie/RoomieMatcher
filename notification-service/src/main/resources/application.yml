@@ -6,6 +6,16 @@ server:
 spring:
   application:
     name: notification-service
+  datasource:
+    url: jdbc:postgresql://${SPRING_DATASOURCE_URL:localhost:5432/roomie_notification}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -26,15 +36,14 @@ spring:
 # AWS SES Configuration (used only when notification.provider=aws-ses)
 aws:
   ses:
-    enabled: ${AWS_SES_ENABLED:false}
-    access-key: ${AWS_SES_ACCESS_KEY:}
-    secret-key: ${AWS_SES_SECRET_KEY:}
     region: ${AWS_SES_REGION:us-east-1}
     from-email: ${AWS_SES_FROM_EMAIL:no-reply@roomiematcher.com}
+    access-key: ${AWS_SES_ACCESS_KEY:}
+    secret-key: ${AWS_SES_SECRET_KEY:}
 
 # Email Provider Configuration
 notification:
-  provider: standard # standard, aws-ses
+  provider: ${NOTIFICATION_PROVIDER:aws-ses}
 
 # OpenAPI Configuration
 springdoc:
@@ -47,9 +56,17 @@ springdoc:
 # Logging
 logging:
   level:
-    com.roomiematcher: INFO
-    org.springframework: WARN
-    org.springframework.web: INFO
+    root: INFO
+    com.roomiematcher: DEBUG
 
 jwt:
-  secret: ${JWT_SECRET:your_jwt_secret_key_here} 
+  secret: ${JWT_SECRET:your_jwt_secret_key_here}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always 

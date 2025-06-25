@@ -16,12 +16,34 @@ public class TenantProfileDTO {
     private Boolean pets;
     private Set<String> preferredGenders;
     
+    // New tenant preferences
+    private String dailySchedule;
+    private String guestFrequency;
+    private String cookingHabits;
+    private String musicNoise;
+    private String cleaningFrequency;
+    private String socialStyle;
+    private String temperaturePreference;
+    private String lightingPreference;
+    private String petCompatibility;
+    private String smokingPreference;
+    private String parkingNeeds;
+    private String overnightGuests;
+    private String workFromHome;
+    private String allergies;
+    
     public TenantProfileDTO() {
     }
     
     public TenantProfileDTO(Long id, Long userId, String name, String email, String gender, Double budget, 
                            String location, Integer cleanlinessLevel, Integer noiseTolerance, 
-                           Boolean smoking, Boolean pets, Set<String> preferredGenders) {
+                           Boolean smoking, Boolean pets, Set<String> preferredGenders,
+                           String dailySchedule, String guestFrequency, String cookingHabits,
+                           String musicNoise, String cleaningFrequency, String socialStyle,
+                           String temperaturePreference, String lightingPreference, 
+                           String petCompatibility, String smokingPreference,
+                           String parkingNeeds, String overnightGuests,
+                           String workFromHome, String allergies) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -34,6 +56,20 @@ public class TenantProfileDTO {
         this.smoking = smoking;
         this.pets = pets;
         this.preferredGenders = preferredGenders;
+        this.dailySchedule = dailySchedule;
+        this.guestFrequency = guestFrequency;
+        this.cookingHabits = cookingHabits;
+        this.musicNoise = musicNoise;
+        this.cleaningFrequency = cleaningFrequency;
+        this.socialStyle = socialStyle;
+        this.temperaturePreference = temperaturePreference;
+        this.lightingPreference = lightingPreference;
+        this.petCompatibility = petCompatibility;
+        this.smokingPreference = smokingPreference;
+        this.parkingNeeds = parkingNeeds;
+        this.overnightGuests = overnightGuests;
+        this.workFromHome = workFromHome;
+        this.allergies = allergies;
     }
     
     // Getters and setters
@@ -133,6 +169,118 @@ public class TenantProfileDTO {
         this.preferredGenders = preferredGenders;
     }
     
+    public String getDailySchedule() {
+        return dailySchedule;
+    }
+    
+    public void setDailySchedule(String dailySchedule) {
+        this.dailySchedule = dailySchedule;
+    }
+    
+    public String getGuestFrequency() {
+        return guestFrequency;
+    }
+    
+    public void setGuestFrequency(String guestFrequency) {
+        this.guestFrequency = guestFrequency;
+    }
+    
+    public String getCookingHabits() {
+        return cookingHabits;
+    }
+    
+    public void setCookingHabits(String cookingHabits) {
+        this.cookingHabits = cookingHabits;
+    }
+    
+    public String getMusicNoise() {
+        return musicNoise;
+    }
+    
+    public void setMusicNoise(String musicNoise) {
+        this.musicNoise = musicNoise;
+    }
+    
+    public String getCleaningFrequency() {
+        return cleaningFrequency;
+    }
+    
+    public void setCleaningFrequency(String cleaningFrequency) {
+        this.cleaningFrequency = cleaningFrequency;
+    }
+    
+    public String getSocialStyle() {
+        return socialStyle;
+    }
+    
+    public void setSocialStyle(String socialStyle) {
+        this.socialStyle = socialStyle;
+    }
+    
+    public String getTemperaturePreference() {
+        return temperaturePreference;
+    }
+    
+    public void setTemperaturePreference(String temperaturePreference) {
+        this.temperaturePreference = temperaturePreference;
+    }
+    
+    public String getLightingPreference() {
+        return lightingPreference;
+    }
+    
+    public void setLightingPreference(String lightingPreference) {
+        this.lightingPreference = lightingPreference;
+    }
+    
+    public String getPetCompatibility() {
+        return petCompatibility;
+    }
+    
+    public void setPetCompatibility(String petCompatibility) {
+        this.petCompatibility = petCompatibility;
+    }
+    
+    public String getSmokingPreference() {
+        return smokingPreference;
+    }
+    
+    public void setSmokingPreference(String smokingPreference) {
+        this.smokingPreference = smokingPreference;
+    }
+    
+    public String getParkingNeeds() {
+        return parkingNeeds;
+    }
+    
+    public void setParkingNeeds(String parkingNeeds) {
+        this.parkingNeeds = parkingNeeds;
+    }
+    
+    public String getOvernightGuests() {
+        return overnightGuests;
+    }
+    
+    public void setOvernightGuests(String overnightGuests) {
+        this.overnightGuests = overnightGuests;
+    }
+    
+    public String getWorkFromHome() {
+        return workFromHome;
+    }
+    
+    public void setWorkFromHome(String workFromHome) {
+        this.workFromHome = workFromHome;
+    }
+    
+    public String getAllergies() {
+        return allergies;
+    }
+    
+    public void setAllergies(String allergies) {
+        this.allergies = allergies;
+    }
+    
     // Builder pattern implementation
     public static TenantProfileDTOBuilder builder() {
         return new TenantProfileDTOBuilder();
@@ -151,6 +299,20 @@ public class TenantProfileDTO {
         private Boolean smoking;
         private Boolean pets;
         private Set<String> preferredGenders;
+        private String dailySchedule;
+        private String guestFrequency;
+        private String cookingHabits;
+        private String musicNoise;
+        private String cleaningFrequency;
+        private String socialStyle;
+        private String temperaturePreference;
+        private String lightingPreference;
+        private String petCompatibility;
+        private String smokingPreference;
+        private String parkingNeeds;
+        private String overnightGuests;
+        private String workFromHome;
+        private String allergies;
         
         public TenantProfileDTOBuilder id(Long id) {
             this.id = id;
@@ -212,9 +374,83 @@ public class TenantProfileDTO {
             return this;
         }
         
+        public TenantProfileDTOBuilder dailySchedule(String dailySchedule) {
+            this.dailySchedule = dailySchedule;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder guestFrequency(String guestFrequency) {
+            this.guestFrequency = guestFrequency;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder cookingHabits(String cookingHabits) {
+            this.cookingHabits = cookingHabits;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder musicNoise(String musicNoise) {
+            this.musicNoise = musicNoise;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder cleaningFrequency(String cleaningFrequency) {
+            this.cleaningFrequency = cleaningFrequency;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder socialStyle(String socialStyle) {
+            this.socialStyle = socialStyle;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder temperaturePreference(String temperaturePreference) {
+            this.temperaturePreference = temperaturePreference;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder lightingPreference(String lightingPreference) {
+            this.lightingPreference = lightingPreference;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder petCompatibility(String petCompatibility) {
+            this.petCompatibility = petCompatibility;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder smokingPreference(String smokingPreference) {
+            this.smokingPreference = smokingPreference;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder parkingNeeds(String parkingNeeds) {
+            this.parkingNeeds = parkingNeeds;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder overnightGuests(String overnightGuests) {
+            this.overnightGuests = overnightGuests;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder workFromHome(String workFromHome) {
+            this.workFromHome = workFromHome;
+            return this;
+        }
+        
+        public TenantProfileDTOBuilder allergies(String allergies) {
+            this.allergies = allergies;
+            return this;
+        }
+        
         public TenantProfileDTO build() {
             return new TenantProfileDTO(id, userId, name, email, gender, budget, location, 
-                                      cleanlinessLevel, noiseTolerance, smoking, pets, preferredGenders);
+                                      cleanlinessLevel, noiseTolerance, smoking, pets, preferredGenders,
+                                      dailySchedule, guestFrequency, cookingHabits, musicNoise,
+                                      cleaningFrequency, socialStyle, temperaturePreference, 
+                                      lightingPreference, petCompatibility, smokingPreference,
+                                      parkingNeeds, overnightGuests, workFromHome, allergies);
         }
     }
 } 
