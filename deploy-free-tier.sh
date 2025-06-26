@@ -5,7 +5,7 @@ set -e
 # Configuration
 APP_NAME="roomiematcher"
 ENV_NAME="free-tier"
-AWS_REGION="us-east-1"  # Change as needed for your free tier region
+AWS_REGION="ap-south-1"  # Updated to match the user's region
 SOLUTION_STACK="64bit Amazon Linux 2 v3.5.3 running Docker"
 DB_STACK_NAME="${APP_NAME}-db"
 
@@ -25,7 +25,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 
 # Get VPC and Subnet information
 echo "Getting VPC information..."
-DEFAULT_VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text)
+DEFAULT_VPC_ID=$(aws ec2 describe-vpcs --filters "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text --region $AWS_REGION)
 if [ -z "$DEFAULT_VPC_ID" ] || [ "$DEFAULT_VPC_ID" == "None" ]; then
     echo "No default VPC found. Please specify a VPC ID:"
     read -p "VPC ID: " VPC_ID
@@ -36,7 +36,7 @@ fi
 
 # Get public subnets
 echo "Getting subnet information..."
-SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" "Name=map-public-ip-on-launch,Values=true" --query "Subnets[*].SubnetId" --output text | tr '\t' ',')
+SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" "Name=map-public-ip-on-launch,Values=true" --query "Subnets[*].SubnetId" --output text --region $AWS_REGION | tr '\t' ',')
 if [ -z "$SUBNET_IDS" ] || [ "$SUBNET_IDS" == "None" ]; then
     echo "No public subnets found. Please specify at least two subnet IDs (comma-separated):"
     read -p "Subnet IDs: " SUBNET_IDS
@@ -50,7 +50,7 @@ JWT_SECRET=$(openssl rand -base64 32)
 
 # 1. Create RDS instance if it doesn't exist
 echo "Step 1: Creating RDS instance..."
-aws cloudformation describe-stacks --stack-name $DB_STACK_NAME &>/dev/null || \
+aws cloudformation describe-stacks --stack-name $DB_STACK_NAME --region $AWS_REGION &>/dev/null || \
 aws cloudformation create-stack \
     --stack-name $DB_STACK_NAME \
     --template-body file://deployment/cloudformation/database/rds-free-tier.yaml \
@@ -59,14 +59,57 @@ aws cloudformation create-stack \
         ParameterKey=SubnetIds,ParameterValue=\"$SUBNET_IDS\" \
         ParameterKey=DBUsername,ParameterValue=postgres \
         ParameterKey=DBPassword,ParameterValue=$DB_PASSWORD \
-        ParameterKey=Environment,ParameterValue=dev
+        ParameterKey=Environment,ParameterValue=dev \
+    --region $AWS_REGION
 
 echo "Waiting for RDS instance to be created (this may take 5-10 minutes)..."
-aws cloudformation wait stack-create-complete --stack-name $DB_STACK_NAME || true
+aws cloudformation wait stack-create-complete --stack-name $DB_STACK_NAME --region $AWS_REGION || true
 
 # Get RDS endpoint
-RDS_ENDPOINT=$(aws cloudformation describe-stacks --stack-name $DB_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text)
+RDS_ENDPOINT=$(aws cloudformation describe-stacks --stack-name $DB_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text --region $AWS_REGION)
 echo "RDS Endpoint: $RDS_ENDPOINT"
+
+# Get security group ID
+DB_SG_ID=$(aws cloudformation describe-stacks --stack-name $DB_STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='DBSecurityGroupId'].OutputValue" --output text --region $AWS_REGION)
+echo "RDS Security Group ID: $DB_SG_ID"
+
+# Add specific rule for current IP
+MY_IP=$(curl -s https://checkip.amazonaws.com)
+echo "Your public IP is: $MY_IP"
+echo "Adding rule to allow access from your IP..."
+aws ec2 authorize-security-group-ingress --group-id $DB_SG_ID --protocol tcp --port 5432 --cidr ${MY_IP}/32 --region $AWS_REGION || echo "Rule may already exist or couldn't be added. Continuing anyway."
+
+# Wait for RDS to be fully available
+echo "Waiting for RDS to become fully available..."
+sleep 30
+
+# Test connectivity
+echo "Testing connectivity to RDS..."
+MAX_RETRIES=5
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if PGPASSWORD=$DB_PASSWORD psql -h $RDS_ENDPOINT -p 5432 -U postgres -c "SELECT 1;" postgres &>/dev/null; then
+        echo "Successfully connected to RDS!"
+        break
+    else
+        RETRY_COUNT=$((RETRY_COUNT+1))
+        if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Failed to connect to RDS after $MAX_RETRIES attempts."
+            echo "This could be due to network restrictions, security group issues, or RDS not being fully available yet."
+            echo "Please check your VPC settings, security groups, and network ACLs."
+            echo "Would you like to continue with deployment anyway? (y/n)"
+            read -p "> " CONTINUE
+            if [[ $CONTINUE != "y" && $CONTINUE != "Y" ]]; then
+                echo "Deployment aborted."
+                exit 1
+            fi
+        else
+            echo "Connection attempt $RETRY_COUNT failed. Waiting 30 seconds before retrying..."
+            sleep 30
+        fi
+    fi
+done
 
 # 2. Set up AWS SES
 echo "Step 2: Configuring AWS SES..."

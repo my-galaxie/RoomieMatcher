@@ -5,134 +5,94 @@
 
 set -e
 
-# Configuration - update these values if you changed them in your deployment
+# Configuration
 APP_NAME="roomiematcher"
 ENV_NAME="free-tier"
-AWS_REGION="us-east-1"  # Make sure this matches your deployment region
+AWS_REGION="ap-south-1"  # Updated to match the user's region
 DB_STACK_NAME="${APP_NAME}-db"
+SES_USER_NAME="${APP_NAME}-ses-user"
 
-echo "==== AWS Free Tier Resources Cleanup for RoomieMatcher ===="
-echo "This script will remove ALL RoomieMatcher resources from your AWS account."
-echo "WARNING: This action cannot be undone and will result in data loss!"
-read -p "Are you sure you want to proceed? (y/n): " -n 1 -r
-echo
+echo "==== AWS Free Tier Cleanup for RoomieMatcher ===="
+echo "This script will remove all AWS resources created for RoomieMatcher."
+echo "WARNING: This will delete your database and all application data!"
+read -p "Are you sure you want to continue? (y/n): " CONFIRM
 
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ $CONFIRM != "y" && $CONFIRM != "Y" ]]; then
     echo "Cleanup cancelled."
     exit 0
 fi
 
-# Get AWS account ID
-ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-echo "AWS Account ID: $ACCOUNT_ID"
+# Check for AWS CLI
+if ! command -v aws &> /dev/null; then
+    echo "AWS CLI not found. Please install it first."
+    exit 1
+fi
 
-# 1. Terminate Elastic Beanstalk environment
-echo "Step 1: Terminating Elastic Beanstalk environment..."
-aws elasticbeanstalk describe-environments --environment-names $ENV_NAME --query "Environments[0].Status" --output text | grep -q "Terminated" || \
-  aws elasticbeanstalk terminate-environment --environment-name $ENV_NAME --force-terminate
+# Check AWS account and permissions
+echo "Checking AWS account..."
+aws sts get-caller-identity --region $AWS_REGION || { echo "Failed to authenticate with AWS. Please check your credentials."; exit 1; }
 
-echo "Waiting for environment to terminate (this may take several minutes)..."
-while aws elasticbeanstalk describe-environments --environment-names $ENV_NAME --query "Environments[0].Status" --output text 2>/dev/null | grep -q -v "Terminated"; do
-  echo -n "."
-  sleep 10
+# 1. Delete Elastic Beanstalk environment
+echo "Step 1: Deleting Elastic Beanstalk environment..."
+aws elasticbeanstalk describe-environments --environment-names "${APP_NAME}-${ENV_NAME}" --region $AWS_REGION &>/dev/null && \
+aws elasticbeanstalk terminate-environment --environment-name "${APP_NAME}-${ENV_NAME}" --region $AWS_REGION
+
+echo "Waiting for environment to be terminated..."
+while true; do
+    STATUS=$(aws elasticbeanstalk describe-environments --environment-names "${APP_NAME}-${ENV_NAME}" --query "Environments[0].Status" --output text --region $AWS_REGION 2>/dev/null || echo "TERMINATED")
+    if [ "$STATUS" == "TERMINATED" ] || [ "$STATUS" == "None" ]; then
+        break
+    fi
+    echo "Environment status: $STATUS"
+    sleep 30
 done
-echo "Environment terminated."
 
 # 2. Delete Elastic Beanstalk application
-echo -e "\nStep 2: Deleting Elastic Beanstalk application..."
-aws elasticbeanstalk delete-application --application-name $APP_NAME --terminate-env-by-force
+echo "Step 2: Deleting Elastic Beanstalk application..."
+aws elasticbeanstalk delete-application --application-name $APP_NAME --terminate-env-by-force --region $AWS_REGION || true
 
-# 3. Delete ECR repositories
-echo -e "\nStep 3: Deleting ECR repositories..."
-for service in api-gateway auth-service profile-service match-service notification-service; do
-    repo_name="roomiematcher-${service}"
-    echo "Deleting repository $repo_name..."
-    aws ecr delete-repository --repository-name $repo_name --force || true
+# 3. Delete RDS instance through CloudFormation
+echo "Step 3: Deleting RDS instance..."
+aws cloudformation delete-stack --stack-name $DB_STACK_NAME --region $AWS_REGION || true
+
+echo "Waiting for RDS instance to be deleted..."
+aws cloudformation wait stack-delete-complete --stack-name $DB_STACK_NAME --region $AWS_REGION || true
+
+# 4. Delete SES user and credentials
+echo "Step 4: Deleting SES IAM user and credentials..."
+# Get user ARN
+USER_ARN=$(aws iam get-user --user-name $SES_USER_NAME --query "User.Arn" --output text --region $AWS_REGION 2>/dev/null || echo "")
+
+if [ -n "$USER_ARN" ] && [ "$USER_ARN" != "None" ]; then
+    # List and delete access keys
+    ACCESS_KEYS=$(aws iam list-access-keys --user-name $SES_USER_NAME --query "AccessKeyMetadata[*].AccessKeyId" --output text --region $AWS_REGION)
+    for KEY_ID in $ACCESS_KEYS; do
+        echo "Deleting access key $KEY_ID..."
+        aws iam delete-access-key --user-name $SES_USER_NAME --access-key-id $KEY_ID --region $AWS_REGION
+    done
+
+    # Detach policies
+    ATTACHED_POLICIES=$(aws iam list-attached-user-policies --user-name $SES_USER_NAME --query "AttachedPolicies[*].PolicyArn" --output text --region $AWS_REGION)
+    for POLICY_ARN in $ATTACHED_POLICIES; do
+        echo "Detaching policy $POLICY_ARN..."
+        aws iam detach-user-policy --user-name $SES_USER_NAME --policy-arn $POLICY_ARN --region $AWS_REGION
+    done
+
+    # Delete user
+    echo "Deleting IAM user $SES_USER_NAME..."
+    aws iam delete-user --user-name $SES_USER_NAME --region $AWS_REGION
+fi
+
+# 5. Delete S3 buckets
+echo "Step 5: Deleting S3 buckets..."
+# Find and delete Elastic Beanstalk related buckets
+EB_BUCKETS=$(aws s3api list-buckets --query "Buckets[?contains(Name, '${APP_NAME}') || contains(Name, 'elasticbeanstalk')].Name" --output text --region $AWS_REGION)
+for BUCKET in $EB_BUCKETS; do
+    echo "Emptying and deleting bucket $BUCKET..."
+    aws s3 rm s3://$BUCKET --recursive --region $AWS_REGION || true
+    aws s3api delete-bucket --bucket $BUCKET --region $AWS_REGION || true
 done
 
-# 4. Delete S3 bucket
-S3_BUCKET="${APP_NAME}-deployments-${ACCOUNT_ID}"
-echo -e "\nStep 4: Deleting S3 bucket $S3_BUCKET..."
-aws s3 rb s3://$S3_BUCKET --force || true
-
-# 5. Check for any running EC2 instances related to the project
-echo -e "\nStep 5: Checking for any stray EC2 instances..."
-INSTANCES=$(aws ec2 describe-instances \
-  --filters "Name=tag:elasticbeanstalk:environment-name,Values=${ENV_NAME}" "Name=instance-state-name,Values=running,pending,stopping,stopped" \
-  --query "Reservations[*].Instances[*].InstanceId" \
-  --output text)
-
-if [ -n "$INSTANCES" ]; then
-    echo "Found EC2 instances to terminate: $INSTANCES"
-    aws ec2 terminate-instances --instance-ids $INSTANCES
-    echo "Waiting for instances to terminate..."
-    aws ec2 wait instance-terminated --instance-ids $INSTANCES
-    echo "Instances terminated."
-else
-    echo "No running EC2 instances found."
-fi
-
-# 6. Check for stray security groups
-echo -e "\nStep 6: Checking for stray security groups..."
-SG_IDS=$(aws ec2 describe-security-groups \
-  --filters "Name=tag:elasticbeanstalk:environment-name,Values=${ENV_NAME}" \
-  --query "SecurityGroups[*].GroupId" \
-  --output text)
-
-if [ -n "$SG_IDS" ]; then
-    echo "Found security groups to delete: $SG_IDS"
-    for sg in $SG_IDS; do
-        aws ec2 delete-security-group --group-id $sg || echo "Could not delete security group $sg. It may be in use."
-    done
-else
-    echo "No security groups found."
-fi
-
-# 7. Delete RDS instance using CloudFormation
-echo -e "\nStep 7: Deleting RDS instance..."
-if aws cloudformation describe-stacks --stack-name $DB_STACK_NAME &>/dev/null; then
-    aws cloudformation delete-stack --stack-name $DB_STACK_NAME
-    echo "Waiting for RDS instance to be deleted (this may take 5-10 minutes)..."
-    aws cloudformation wait stack-delete-complete --stack-name $DB_STACK_NAME
-    echo "RDS instance deleted."
-else
-    echo "No RDS CloudFormation stack found with name $DB_STACK_NAME."
-fi
-
-# 8. Clean up SES identities
-echo -e "\nStep 8: Cleaning up SES identities..."
-SES_EMAIL=$(grep "AWS SES From Email:" "${APP_NAME}-credentials.txt" 2>/dev/null | cut -d' ' -f5 || echo "")
-
-if [ -n "$SES_EMAIL" ]; then
-    echo "Removing SES identity: $SES_EMAIL"
-    aws ses delete-identity --identity $SES_EMAIL --region $AWS_REGION || true
-else
-    echo "No SES email found in credentials file. Skipping SES cleanup."
-fi
-
-# 9. Clean up IAM resources
-echo -e "\nStep 9: Cleaning up IAM resources..."
-# Delete SES IAM user
-if aws iam get-user --user-name ${APP_NAME}-ses-user &>/dev/null; then
-    echo "Removing access keys for ${APP_NAME}-ses-user..."
-    ACCESS_KEYS=$(aws iam list-access-keys --user-name ${APP_NAME}-ses-user --query "AccessKeyMetadata[*].AccessKeyId" --output text)
-    for key in $ACCESS_KEYS; do
-        aws iam delete-access-key --user-name ${APP_NAME}-ses-user --access-key-id $key
-    done
-    
-    echo "Detaching policies from ${APP_NAME}-ses-user..."
-    POLICIES=$(aws iam list-attached-user-policies --user-name ${APP_NAME}-ses-user --query "AttachedPolicies[*].PolicyArn" --output text)
-    for policy in $POLICIES; do
-        aws iam detach-user-policy --user-name ${APP_NAME}-ses-user --policy-arn $policy
-    done
-    
-    echo "Deleting IAM user ${APP_NAME}-ses-user..."
-    aws iam delete-user --user-name ${APP_NAME}-ses-user
-    echo "IAM user deleted."
-else
-    echo "No IAM user found for SES."
-fi
-
-echo -e "\nCleanup complete! All RoomieMatcher resources have been removed from your AWS account."
-echo "You may want to check the AWS Console to confirm all resources have been deleted successfully."
-echo "Don't forget to check AWS Billing to ensure no unexpected charges appear." 
+echo "==== Cleanup Complete ===="
+echo "Most resources have been deleted. Some resources like security groups may need manual cleanup."
+echo "Check your AWS console to ensure all resources are properly removed." 

@@ -1,102 +1,84 @@
-# GitHub CI/CD Pipeline Setup for RoomieMatcher
+# RoomieMatcher: Quick GitHub CI/CD Setup Guide
 
-This guide will help you set up the GitHub CI/CD pipeline for deploying RoomieMatcher to AWS Elastic Beanstalk using the free tier resources.
+This guide provides simplified steps to deploy RoomieMatcher to AWS Elastic Beanstalk using GitHub Actions.
 
-## Prerequisites
+## Step 1: Set Up AWS Resources
 
-- GitHub repository with RoomieMatcher code
-- AWS account with Free Tier eligibility
-- AWS RDS instance already created (or will be created by the deploy script)
-- AWS SES configured for email sending
+1. **Create an IAM User for Deployments**:
+   - Go to AWS IAM Console
+   - Create a new user with programmatic access
+   - Attach policies: `AmazonEC2ContainerRegistryFullAccess`, `AWSElasticBeanstalkFullAccess`, and `AmazonS3FullAccess`
+   - Save the Access Key ID and Secret Access Key
 
-## Setting Up GitHub Secrets
+2. **Set Up RDS Database**:
+   - Run `./deploy-free-tier.sh` to create the RDS instance
+   - Note the RDS endpoint
 
-The CI/CD workflow requires several GitHub secrets to be configured. Follow these steps:
+3. **Configure AWS SES**:
+   - Verify an email address in SES console
+   - Create SES credentials if needed
 
-1. Navigate to your GitHub repository
-2. Go to **Settings** > **Secrets and variables** > **Actions**
-3. Click on **New repository secret**
-4. Add the following secrets:
+## Step 2: Configure GitHub Secrets
 
-| Secret Name | Description | Example Value |
-|-------------|-------------|--------------|
-| `AWS_ACCESS_KEY_ID` | AWS IAM user access key with deployment permissions | `AKIA1234567890ABCDEF` |
-| `AWS_SECRET_ACCESS_KEY` | AWS IAM user secret key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` |
-| `AWS_REGION` | AWS region for deployment | `us-east-1` |
-| `RDS_ENDPOINT` | RDS instance endpoint | `roomiematcher-db.cxyz123456.us-east-1.rds.amazonaws.com` |
-| `DB_USERNAME` | Database username | `postgres` |
-| `DB_PASSWORD` | Database password | `YourStrongPassword` |
-| `JWT_SECRET` | Secret key for JWT token generation | `YourJwtSecretKey` |
-| `AWS_SES_ACCESS_KEY` | AWS SES access key | `AKIA1234567890GHIJKL` |
-| `AWS_SES_SECRET_KEY` | AWS SES secret key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY2` |
-| `AWS_SES_FROM_EMAIL` | Verified email address for sending emails | `no-reply@yourdomain.com` |
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions
+2. Add the following secrets:
 
-## Required IAM Permissions
+| Secret Name | Description |
+|-------------|-------------|
+| `AWS_ACCESS_KEY_ID` | IAM user access key |
+| `AWS_SECRET_ACCESS_KEY` | IAM user secret key |
+| `AWS_REGION` | AWS region (e.g., `ap-south-1`) |
+| `RDS_ENDPOINT` | RDS instance endpoint |
+| `DB_USERNAME` | Database username (usually `postgres`) |
+| `DB_PASSWORD` | Database password |
+| `JWT_SECRET` | Secret for JWT tokens |
+| `AWS_SES_ACCESS_KEY` | SES access key |
+| `AWS_SES_SECRET_KEY` | SES secret key |
+| `AWS_SES_REGION` | SES region |
+| `AWS_SES_FROM_EMAIL` | Verified email for sending notifications |
 
-The AWS IAM user for CI/CD should have the following permissions:
+## Step 3: Push Code to GitHub
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "elasticbeanstalk:*",
-        "ec2:*",
-        "ecs:*",
-        "ecr:*",
-        "elasticloadbalancing:*",
-        "autoscaling:*",
-        "cloudwatch:*",
-        "s3:*",
-        "sns:*",
-        "cloudformation:*",
-        "iam:PassRole"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
+The GitHub Actions workflow is already set up in `.github/workflows/deploy-to-aws.yml`. Simply push your code to the `main` branch:
+
+```bash
+git add .
+git commit -m "Initial deployment"
+git push origin main
 ```
 
-## How the CI/CD Pipeline Works
+## Step 4: Monitor Deployment
 
-1. **Trigger**: The workflow is triggered when code is pushed to the `main` branch or manually using the workflow_dispatch event
-2. **Build**: Java application is built using Maven
-3. **Docker**: Docker images are built and pushed to Amazon ECR
-4. **Configuration**: Dockerrun.aws.json is generated with the correct variables
-5. **Deployment**: Application is deployed to AWS Elastic Beanstalk
-
-## First Time Setup
-
-For the first deployment, you should:
-
-1. Run the `deploy-free-tier.sh` script locally to create the RDS instance and set up AWS SES
-2. Copy the values from `roomiematcher-credentials.txt` file into GitHub Secrets
-3. Push code to GitHub to trigger the automated deployment
-
-## Monitoring Deployments
-
-You can monitor the deployment status:
-
-1. In GitHub: Go to **Actions** tab in your repository
-2. In AWS: Check the Elastic Beanstalk console
+1. Go to the "Actions" tab in your GitHub repository
+2. Watch the workflow progress
+3. Once completed, check your application at the Elastic Beanstalk URL
 
 ## Troubleshooting
 
-If deployment fails:
+If deployment fails, check:
 
-1. Check the GitHub Actions logs for error messages
-2. Verify that all secrets are properly configured
-3. Ensure your AWS IAM user has sufficient permissions
-4. Check the Elastic Beanstalk logs for application-specific errors
+1. **GitHub Actions Logs**:
+   - Look for error messages in the workflow run
 
-## Staying Within Free Tier
+2. **AWS Elastic Beanstalk Console**:
+   - Check environment health
+   - Review events for errors
 
-This CI/CD pipeline is configured to deploy to AWS Free Tier resources, but be cautious:
+3. **Common Issues**:
+   - Incorrect AWS credentials
+   - Missing GitHub secrets
+   - Docker build failures
+   - RDS connectivity issues
 
-1. Keep only one environment running
-2. Use `db.t2.micro` for RDS (free tier eligible)
-3. Monitor your AWS billing regularly
-4. Set up AWS Budget alerts 
+## Updating Your Application
+
+To update your application, simply push changes to the `main` branch. The CI/CD pipeline will automatically build and deploy the updates.
+
+For manual deployment triggers, use the "Run workflow" button in the Actions tab.
+
+## Cleanup
+
+When you no longer need the application:
+
+1. Run `./cleanup-free-tier.sh` to remove AWS resources
+2. Delete the GitHub repository if needed 

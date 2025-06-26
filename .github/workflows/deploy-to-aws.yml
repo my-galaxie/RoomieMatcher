@@ -6,58 +6,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-      
+    - uses: actions/checkout@v3
+
     - name: Set up JDK 17
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         java-version: '17'
-        distribution: 'adopt'
-        
+        distribution: 'temurin'
+        cache: maven
+
     - name: Build with Maven
-      run: mvn -B package --file pom.xml -DskipTests
-      
+      run: mvn clean package -DskipTests
+
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-      
+
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-      
+
     - name: Get AWS account ID
       id: get-aws-account
-      run: |
-        echo "::set-output name=account_id::$(aws sts get-caller-identity --query "Account" --output text)"
-    
+      run: echo "account_id=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_OUTPUT
+
     - name: Build, tag, and push images to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY_PREFIX: roomiematcher
-        IMAGE_TAG: ${{ github.sha }}
+        AWS_ACCOUNT_ID: ${{ steps.get-aws-account.outputs.account_id }}
       run: |
         # Build and push each service
-        for service in api-gateway auth-service profile-service match-service notification-service; do
-          echo "Building $service..."
-          cd $service
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_PREFIX-$service:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY_PREFIX-$service:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_PREFIX-$service:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_PREFIX-$service:latest
-          cd ..
+        for service in api-gateway-service auth-service profile-service match-service notification-service; do
+          service_name=$(echo $service | sed 's/-service//')
+          repo_name="${ECR_REPOSITORY_PREFIX}-${service_name}"
+          
+          # Create repository if it doesn't exist
+          aws ecr describe-repositories --repository-names ${repo_name} || aws ecr create-repository --repository-name ${repo_name}
+          
+          # Build and push
+          docker build -t ${ECR_REGISTRY}/${repo_name}:latest ./${service}
+          docker push ${ECR_REGISTRY}/${repo_name}:latest
         done
-    
+
     - name: Generate Dockerrun.aws.json
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY_PREFIX: roomiematcher
-        IMAGE_TAG: ${{ github.sha }}
+        AWS_ACCOUNT_ID: ${{ steps.get-aws-account.outputs.account_id }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
         RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
         DB_USERNAME: ${{ secrets.DB_USERNAME }}
@@ -65,10 +66,10 @@ jobs:
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         AWS_SES_ACCESS_KEY: ${{ secrets.AWS_SES_ACCESS_KEY }}
         AWS_SES_SECRET_KEY: ${{ secrets.AWS_SES_SECRET_KEY }}
+        AWS_SES_REGION: ${{ secrets.AWS_SES_REGION }}
         AWS_SES_FROM_EMAIL: ${{ secrets.AWS_SES_FROM_EMAIL }}
       run: |
-        ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-        sed -e "s/\${AWS_ACCOUNT_ID}/$ACCOUNT_ID/g" \
+        sed -e "s/\${AWS_ACCOUNT_ID}/$AWS_ACCOUNT_ID/g" \
             -e "s/\${AWS_REGION}/$AWS_REGION/g" \
             -e "s/\${RDS_ENDPOINT}/$RDS_ENDPOINT/g" \
             -e "s/\${DB_USERNAME}/$DB_USERNAME/g" \
@@ -76,23 +77,25 @@ jobs:
             -e "s/\${JWT_SECRET}/$JWT_SECRET/g" \
             -e "s/\${AWS_SES_ACCESS_KEY}/$AWS_SES_ACCESS_KEY/g" \
             -e "s/\${AWS_SES_SECRET_KEY}/$AWS_SES_SECRET_KEY/g" \
-            -e "s/\${AWS_SES_REGION}/$AWS_REGION/g" \
+            -e "s/\${AWS_SES_REGION}/$AWS_SES_REGION/g" \
             -e "s/\${AWS_SES_FROM_EMAIL}/$AWS_SES_FROM_EMAIL/g" \
             Dockerrun.aws.json > Dockerrun.aws.generated.json
-            
-    - name: Generate deployment package
+
+    - name: Create deployment package
       run: |
-        mkdir -p .ebextensions
-        zip -r deploy.zip .ebextensions Dockerrun.aws.generated.json
-        
+        mkdir -p deploy_package
+        cp -r .ebextensions deploy_package/ || echo "No .ebextensions directory found"
+        cp Dockerrun.aws.generated.json deploy_package/Dockerrun.aws.json
+        cd deploy_package && zip -r ../deploy.zip .
+
     - name: Deploy to Elastic Beanstalk
-      uses: einaregilsson/beanstalk-deploy@v20
+      uses: einaregilsson/beanstalk-deploy@v21
       with:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: roomiematcher
         environment_name: free-tier
-        version_label: ${{ github.sha }}
+        version_label: roomiematcher-${{ github.sha }}
         region: ${{ secrets.AWS_REGION }}
         deployment_package: deploy.zip
-        use_existing_version_if_available: false 
+        wait_for_environment_recovery: 300 

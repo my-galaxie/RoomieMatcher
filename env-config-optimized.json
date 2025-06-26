@@ -17,7 +17,7 @@
   {
     "Namespace": "aws:elasticbeanstalk:environment",
     "OptionName": "LoadBalancerType",
-    "Value": "classic"
+    "Value": "application"
   },
   {
     "Namespace": "aws:autoscaling:asg",
@@ -35,14 +35,14 @@
     "Value": "enhanced"
   },
   {
-    "Namespace": "aws:elb:policies",
-    "OptionName": "ConnectionDrainingEnabled",
-    "Value": "true"
+    "Namespace": "aws:elasticbeanstalk:environment:process:default",
+    "OptionName": "HealthCheckPath",
+    "Value": "/actuator/health"
   },
   {
-    "Namespace": "aws:elb:policies",
-    "OptionName": "ConnectionDrainingTimeout",
-    "Value": "20"
+    "Namespace": "aws:elasticbeanstalk:environment:process:default",
+    "OptionName": "MatcherHTTPCode",
+    "Value": "200"
   },
   {
     "Namespace": "aws:elasticbeanstalk:command",

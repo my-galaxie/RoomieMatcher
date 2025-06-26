@@ -39,7 +39,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 5432
           ToPort: 5432
-          CidrIp: 0.0.0.0/0  # In production, restrict to your application security group
+          CidrIp: 0.0.0.0/0  # Allow access from anywhere for development
       Tags:
         - Key: Name
           Value: !Sub 'roomiematcher-${Environment}-db-sg'
@@ -58,9 +58,9 @@ Resources:
     Properties:
       DBInstanceIdentifier: !Sub 'roomiematcher-${Environment}-db'
       AllocatedStorage: 20
-      DBInstanceClass: db.t2.micro  # Free Tier eligible instance
+      DBInstanceClass: db.t3.micro  # Updated to db.t3.micro for better compatibility
       Engine: postgres
-      EngineVersion: '13.7'
+      EngineVersion: '13.15'  # Confirmed available in ap-south-1
       MasterUsername: !Ref DBUsername
       MasterUserPassword: !Ref DBPassword
       DBName: postgres

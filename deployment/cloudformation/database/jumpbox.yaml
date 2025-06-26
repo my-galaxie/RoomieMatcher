@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'EC2 Jumpbox for RoomieMatcher RDS Access'
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where Jumpbox will be deployed (same as RDS)
+
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Public subnet ID for the jumpbox
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Default: roomiematcher-jumpbox-key
+
+  SourceIp:
+    Type: String
+    Description: IP address allowed to SSH to the jumpbox (your IP)
+    Default: 0.0.0.0/0
+
+  DBSecurityGroupId:
+    Type: String
+    Description: Security group ID of the RDS instance
+
+Resources:
+  JumpboxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS Jumpbox
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SourceIp
+      Tags:
+        - Key: Name
+          Value: roomiematcher-jumpbox-sg
+
+  JumpboxInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0d3f444bc76de0a79  # Amazon Linux 2 in ap-south-1
+      KeyName: !Ref KeyName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref JumpboxSecurityGroup
+          SubnetId: !Ref SubnetId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y
+          yum install -y postgresql15
+          echo "Jumpbox setup complete"
+      Tags:
+        - Key: Name
+          Value: roomiematcher-jumpbox
+
+  # Allow jumpbox to access RDS
+  JumpboxToRDSIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DBSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref JumpboxSecurityGroup
+
+Outputs:
+  JumpboxPublicIP:
+    Description: Public IP address of the jumpbox
+    Value: !GetAtt JumpboxInstance.PublicIp
+
+  SSHCommand:
+    Description: Command to SSH into the jumpbox
+    Value: !Sub "ssh -i ${KeyName}.pem ec2-user@${JumpboxInstance.PublicIp}"
+
+  PostgreSQLCommand:
+    Description: Command to connect to PostgreSQL from the jumpbox
+    Value: !Sub "psql -h <RDS_ENDPOINT> -U postgres -d postgres" 

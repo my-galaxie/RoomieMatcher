@@ -1,0 +1,127 @@
+{
+    "StackEvents": [
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "6a1afb50-51e1-11f0-a2f7-06cdea45be9b",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "roomiematcher-db",
+            "PhysicalResourceId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "ResourceType": "AWS::CloudFormation::Stack",
+            "Timestamp": "2025-06-25T16:28:23.802000+00:00",
+            "ResourceStatus": "CREATE_COMPLETE"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "RDSInstance-CREATE_COMPLETE-2025-06-25T16:28:22.107Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "RDSInstance",
+            "PhysicalResourceId": "roomiematcher-dev-db",
+            "ResourceType": "AWS::RDS::DBInstance",
+            "Timestamp": "2025-06-25T16:28:22.107000+00:00",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "ResourceProperties": "{\"StorageEncrypted\":\"false\",\"EngineVersion\":\"13.15\",\"StorageType\":\"gp2\",\"DBInstanceClass\":\"db.t3.micro\",\"DBSubnetGroupName\":\"roomiematcher-db-dbsubnetgroup-lcgltojiuogm\",\"DeletionProtection\":\"false\",\"DBInstanceIdentifier\":\"roomiematcher-dev-db\",\"AllocatedStorage\":\"20\",\"MasterUserPassword\":\"****\",\"VPCSecurityGroups\":[\"sg-07bce8deb7807b5aa\"],\"MasterUsername\":\"postgres\",\"DBName\":\"postgres\",\"BackupRetentionPeriod\":\"1\",\"PubliclyAccessible\":\"true\",\"MultiAZ\":\"false\",\"Engine\":\"postgres\",\"Tags\":[{\"Value\":\"roomiematcher-dev-db\",\"Key\":\"Name\"},{\"Value\":\"dev\",\"Key\":\"Environment\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "RDSInstance-CREATE_IN_PROGRESS-2025-06-25T16:22:44.325Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "RDSInstance",
+            "PhysicalResourceId": "roomiematcher-dev-db",
+            "ResourceType": "AWS::RDS::DBInstance",
+            "Timestamp": "2025-06-25T16:22:44.325000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceStatusReason": "Resource creation Initiated",
+            "ResourceProperties": "{\"StorageEncrypted\":\"false\",\"EngineVersion\":\"13.15\",\"StorageType\":\"gp2\",\"DBInstanceClass\":\"db.t3.micro\",\"DBSubnetGroupName\":\"roomiematcher-db-dbsubnetgroup-lcgltojiuogm\",\"DeletionProtection\":\"false\",\"DBInstanceIdentifier\":\"roomiematcher-dev-db\",\"AllocatedStorage\":\"20\",\"MasterUserPassword\":\"****\",\"VPCSecurityGroups\":[\"sg-07bce8deb7807b5aa\"],\"MasterUsername\":\"postgres\",\"DBName\":\"postgres\",\"BackupRetentionPeriod\":\"1\",\"PubliclyAccessible\":\"true\",\"MultiAZ\":\"false\",\"Engine\":\"postgres\",\"Tags\":[{\"Value\":\"roomiematcher-dev-db\",\"Key\":\"Name\"},{\"Value\":\"dev\",\"Key\":\"Environment\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "RDSInstance-CREATE_IN_PROGRESS-2025-06-25T16:22:43.169Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "RDSInstance",
+            "PhysicalResourceId": "",
+            "ResourceType": "AWS::RDS::DBInstance",
+            "Timestamp": "2025-06-25T16:22:43.169000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceProperties": "{\"StorageEncrypted\":\"false\",\"EngineVersion\":\"13.15\",\"StorageType\":\"gp2\",\"DBInstanceClass\":\"db.t3.micro\",\"DBSubnetGroupName\":\"roomiematcher-db-dbsubnetgroup-lcgltojiuogm\",\"DeletionProtection\":\"false\",\"DBInstanceIdentifier\":\"roomiematcher-dev-db\",\"AllocatedStorage\":\"20\",\"MasterUserPassword\":\"****\",\"VPCSecurityGroups\":[\"sg-07bce8deb7807b5aa\"],\"MasterUsername\":\"postgres\",\"DBName\":\"postgres\",\"BackupRetentionPeriod\":\"1\",\"PubliclyAccessible\":\"true\",\"MultiAZ\":\"false\",\"Engine\":\"postgres\",\"Tags\":[{\"Value\":\"roomiematcher-dev-db\",\"Key\":\"Name\"},{\"Value\":\"dev\",\"Key\":\"Environment\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "DBSecurityGroup-CREATE_COMPLETE-2025-06-25T16:22:42.750Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "DBSecurityGroup",
+            "PhysicalResourceId": "sg-07bce8deb7807b5aa",
+            "ResourceType": "AWS::EC2::SecurityGroup",
+            "Timestamp": "2025-06-25T16:22:42.750000+00:00",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "ResourceProperties": "{\"GroupDescription\":\"Security group for RDS PostgreSQL\",\"VpcId\":\"vpc-0ed1a08ae3ec62e00\",\"SecurityGroupIngress\":[{\"CidrIp\":\"0.0.0.0/0\",\"FromPort\":\"5432\",\"ToPort\":\"5432\",\"IpProtocol\":\"tcp\"}],\"Tags\":[{\"Value\":\"roomiematcher-dev-db-sg\",\"Key\":\"Name\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "DBSubnetGroup-CREATE_COMPLETE-2025-06-25T16:22:37.883Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "DBSubnetGroup",
+            "PhysicalResourceId": "roomiematcher-db-dbsubnetgroup-lcgltojiuogm",
+            "ResourceType": "AWS::RDS::DBSubnetGroup",
+            "Timestamp": "2025-06-25T16:22:37.883000+00:00",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "ResourceProperties": "{\"DBSubnetGroupDescription\":\"Subnet group for RoomieMatcher RDS\",\"SubnetIds\":[\"subnet-02acbaea2b4c680fb\",\"subnet-0cc2aed442e839738\",\"subnet-06d35bf39838ddba2\"],\"Tags\":[{\"Value\":\"roomiematcher-dev-db-subnet-group\",\"Key\":\"Name\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "DBSecurityGroup-CREATE_IN_PROGRESS-2025-06-25T16:22:36.638Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "DBSecurityGroup",
+            "PhysicalResourceId": "sg-07bce8deb7807b5aa",
+            "ResourceType": "AWS::EC2::SecurityGroup",
+            "Timestamp": "2025-06-25T16:22:36.638000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceStatusReason": "Resource creation Initiated",
+            "ResourceProperties": "{\"GroupDescription\":\"Security group for RDS PostgreSQL\",\"VpcId\":\"vpc-0ed1a08ae3ec62e00\",\"SecurityGroupIngress\":[{\"CidrIp\":\"0.0.0.0/0\",\"FromPort\":\"5432\",\"ToPort\":\"5432\",\"IpProtocol\":\"tcp\"}],\"Tags\":[{\"Value\":\"roomiematcher-dev-db-sg\",\"Key\":\"Name\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "DBSubnetGroup-CREATE_IN_PROGRESS-2025-06-25T16:22:35.222Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "DBSubnetGroup",
+            "PhysicalResourceId": "roomiematcher-db-dbsubnetgroup-lcgltojiuogm",
+            "ResourceType": "AWS::RDS::DBSubnetGroup",
+            "Timestamp": "2025-06-25T16:22:35.222000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceStatusReason": "Resource creation Initiated",
+            "ResourceProperties": "{\"DBSubnetGroupDescription\":\"Subnet group for RoomieMatcher RDS\",\"SubnetIds\":[\"subnet-02acbaea2b4c680fb\",\"subnet-0cc2aed442e839738\",\"subnet-06d35bf39838ddba2\"],\"Tags\":[{\"Value\":\"roomiematcher-dev-db-subnet-group\",\"Key\":\"Name\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "DBSubnetGroup-CREATE_IN_PROGRESS-2025-06-25T16:22:34.500Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "DBSubnetGroup",
+            "PhysicalResourceId": "",
+            "ResourceType": "AWS::RDS::DBSubnetGroup",
+            "Timestamp": "2025-06-25T16:22:34.500000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceProperties": "{\"DBSubnetGroupDescription\":\"Subnet group for RoomieMatcher RDS\",\"SubnetIds\":[\"subnet-02acbaea2b4c680fb\",\"subnet-0cc2aed442e839738\",\"subnet-06d35bf39838ddba2\"],\"Tags\":[{\"Value\":\"roomiematcher-dev-db-subnet-group\",\"Key\":\"Name\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "DBSecurityGroup-CREATE_IN_PROGRESS-2025-06-25T16:22:34.391Z",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "DBSecurityGroup",
+            "PhysicalResourceId": "",
+            "ResourceType": "AWS::EC2::SecurityGroup",
+            "Timestamp": "2025-06-25T16:22:34.391000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceProperties": "{\"GroupDescription\":\"Security group for RDS PostgreSQL\",\"VpcId\":\"vpc-0ed1a08ae3ec62e00\",\"SecurityGroupIngress\":[{\"CidrIp\":\"0.0.0.0/0\",\"FromPort\":\"5432\",\"ToPort\":\"5432\",\"IpProtocol\":\"tcp\"}],\"Tags\":[{\"Value\":\"roomiematcher-dev-db-sg\",\"Key\":\"Name\"}]}"
+        },
+        {
+            "StackId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "EventId": "98836f00-51e0-11f0-a26a-06d60d1b5129",
+            "StackName": "roomiematcher-db",
+            "LogicalResourceId": "roomiematcher-db",
+            "PhysicalResourceId": "arn:aws:cloudformation:ap-south-1:160885246702:stack/roomiematcher-db/98817330-51e0-11f0-a26a-06d60d1b5129",
+            "ResourceType": "AWS::CloudFormation::Stack",
+            "Timestamp": "2025-06-25T16:22:32.206000+00:00",
+            "ResourceStatus": "CREATE_IN_PROGRESS",
+            "ResourceStatusReason": "User Initiated"
+        }
+    ]
+}
