@@ -27,8 +27,9 @@ else
   fi
 fi
 
-echo -e "${GREEN}=== RoomieMatcher AWS Free Tier Usage Monitor ===${NC}"
-echo "Running checks for Free Tier eligible resources in region: $AWS_REGION"
+echo -e "${GREEN}==============================================${NC}"
+echo -e "${GREEN}AWS Free Tier Usage Monitor for RoomieMatcher${NC}"
+echo -e "${GREEN}==============================================${NC}"
 
 # Check AWS CLI availability
 if ! command -v aws &> /dev/null; then
@@ -351,4 +352,69 @@ else
 fi
 
 echo -e "\nFor more details on AWS Free Tier: https://aws.amazon.com/free/"
-echo -e "To create budget alerts: https://aws.amazon.com/getting-started/hands-on/control-your-costs-free-tier-budgets/" 
+echo -e "To create budget alerts: https://aws.amazon.com/getting-started/hands-on/control-your-costs-free-tier-budgets/"
+
+echo -e "\n${GREEN}== Additional Monitoring Information ==${NC}"
+
+# Get EC2 instance usage
+echo -e "\n${GREEN}== EC2 Instance Usage ==${NC}"
+echo "------------------"
+aws ec2 describe-instances --query "Reservations[*].Instances[*].[InstanceId, InstanceType, State.Name]" --output table
+echo ""
+
+# Get RDS instance usage
+echo -e "\n${GREEN}== RDS Instance Usage ==${NC}"
+echo "------------------"
+aws rds describe-db-instances --query "DBInstances[*].[DBInstanceIdentifier, DBInstanceClass, Engine, DBInstanceStatus]" --output table
+echo ""
+
+# Get ECR repository usage
+echo -e "\n${GREEN}== ECR Repository Usage ==${NC}"
+echo "-------------------"
+aws ecr describe-repositories --query "repositories[*].[repositoryName, repositoryUri]" --output table
+echo ""
+
+# Get Elastic Beanstalk environments
+echo -e "\n${GREEN}== Elastic Beanstalk Environments ==${NC}"
+echo "-----------------------------"
+aws elasticbeanstalk describe-environments --query "Environments[*].[EnvironmentName, EnvironmentId, Status, Health]" --output table
+echo ""
+
+# Get CloudWatch metrics for EC2 CPU usage
+echo -e "\n${GREEN}== EC2 CPU Usage (Last 24 hours) ==${NC}"
+echo "----------------------------"
+aws cloudwatch get-metric-statistics \
+    --namespace AWS/EC2 \
+    --metric-name CPUUtilization \
+    --start-time "$(date -d '1 day ago' '+%Y-%m-%dT%H:%M:%S')" \
+    --end-time "$(date '+%Y-%m-%dT%H:%M:%S')" \
+    --period 86400 \
+    --statistics Maximum \
+    --dimensions Name=AutoScalingGroupName,Value=awseb-e-* \
+    --output table
+echo ""
+
+# Get SES sending statistics
+echo -e "\n${GREEN}== SES Sending Statistics ==${NC}"
+echo "---------------------"
+aws ses get-send-statistics --query "SendDataPoints[*].[Timestamp, DeliveryAttempts, Bounces, Complaints, Rejects]" --output table
+echo ""
+
+# Get CloudWatch Logs usage
+echo -e "\n${GREEN}== CloudWatch Logs Usage ==${NC}"
+echo "--------------------"
+aws logs describe-log-groups --query "logGroups[*].[logGroupName, storedBytes]" --output table
+echo ""
+
+# Get Cost Explorer data (requires Cost Explorer to be enabled)
+echo -e "\n${GREEN}== Cost Explorer Data (Last 7 days) ==${NC}"
+echo "-------------------------------"
+aws ce get-cost-and-usage \
+    --time-period Start="$(date -d '7 days ago' '+%Y-%m-%d')",End="$(date '+%Y-%m-%d')" \
+    --granularity DAILY \
+    --metrics "BlendedCost" \
+    --group-by Type=DIMENSION,Key=SERVICE \
+    --output table 2>/dev/null || echo "Cost Explorer not enabled or insufficient permissions."
+echo ""
+
+echo -e "\n${GREEN}== Free Tier Monitoring Complete ==${NC}" 

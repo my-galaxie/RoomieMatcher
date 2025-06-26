@@ -33,7 +33,7 @@ COPY --from=build /workspace/app/auth-service/target/*.jar app.jar
 
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=prod
-ENV JAVA_OPTS="-Xms256m -Xmx512m"
+ENV JAVA_OPTS="-Xms96m -Xmx128m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled -Xss256k"
 
 # Set the entrypoint
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
@@ -42,12 +42,5 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 EXPOSE 8081
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8081/api/v1/actuator/health || exit 1 
-
-# Create a deployment package
-RUN mkdir -p deploy_package
-RUN cp -r .ebextensions deploy_package/
-RUN cp Dockerrun.aws.json deploy_package/
-RUN cd deploy_package && zip -r ../deploy.zip .
-RUN cd ..
+HEALTHCHECK --interval=60s --timeout=3s --start-period=120s --retries=3 \
+  CMD curl -f http://localhost:8081/api/v1/actuator/health || exit 1

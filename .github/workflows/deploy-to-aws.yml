@@ -98,4 +98,6 @@ jobs:
         version_label: roomiematcher-${{ github.sha }}
         region: ${{ secrets.AWS_REGION }}
         deployment_package: deploy.zip
-        wait_for_environment_recovery: 300 
+        wait_for_environment_recovery: 300
+        use_existing_version_if_available: false
+        environment_type: SingleInstance 

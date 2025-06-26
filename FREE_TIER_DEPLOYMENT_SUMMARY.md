@@ -1,78 +1,89 @@
-# RoomieMatcher AWS Free Tier Deployment - Optimization Summary
+# RoomieMatcher AWS Free Tier Deployment Summary
 
-This document summarizes the changes made to optimize the RoomieMatcher application for AWS Free Tier deployment.
+This document provides a comprehensive summary of all the optimizations and configurations made to ensure RoomieMatcher can be deployed within the AWS Free Tier limits.
 
 ## Key Optimizations
 
-### 1. Database Configuration
-- Configured RDS to use a single db.t2.micro instance (Free Tier eligible)
-- Disabled Multi-AZ deployment to stay within Free Tier limits
-- Set up multiple databases on a single RDS instance for all services
-- Updated database initialization scripts to include new tenant preference schema
+### 1. Elastic Beanstalk Configuration
+- **Single Instance Environment**: Configured to use a single instance environment instead of load-balanced
+- **No Load Balancer**: Removed load balancer to stay within free tier limits
+- **Instance Type**: Using t2.micro instance type (eligible for free tier)
+- **Spot Instances**: Enabled spot instances to reduce costs further
+- **Basic Health Reporting**: Using basic health reporting instead of enhanced to avoid CloudWatch costs
+- **Deployment Policy**: Using "AllAtOnce" deployment policy for single instance environment
 
-### 2. Memory Optimization
-- Reduced container memory allocations from 150MB to 128MB per service
-- Optimized JVM settings with lower heap sizes (96MB max, 48MB min)
-- Added G1GC garbage collector settings for better memory management
-- Disabled Hibernate statistics generation to reduce memory usage
-- Enabled JDBC batch processing to improve database efficiency
+### 2. Database Configuration
+- **Instance Type**: Using db.t3.micro instance type (eligible for free tier)
+- **No Multi-AZ**: Disabled Multi-AZ deployment to stay within free tier
+- **No Encryption**: Disabled storage encryption to stay within free tier
+- **Limited Storage**: Limited storage to 20GB to stay within free tier
+- **Connection Pooling**: Optimized connection pooling in all services
 
-### 3. AWS SES Integration
-- Added support for AWS SES sandbox mode
-- Implemented email verification endpoints
-- Added proper error handling for unverified email addresses
-- Updated EmailRequestDTO to support multiple recipients
-- Added fallback to instance profile credentials when no explicit SES credentials are provided
+### 3. Docker Optimizations
+- **Memory Limits**: Limited container memory in Dockerrun.aws.json
+- **JVM Settings**: Optimized JVM memory settings in all Dockerfiles
+  ```
+  ENV JAVA_OPTS="-Xms96m -Xmx128m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled -Xss256k"
+  ```
 
-### 4. Elastic Beanstalk Configuration
-- Configured for Single Instance environment (no load balancer)
-- Added JVM options through .ebextensions
-- Set up proper IAM roles for SES access
-- Removed local PostgreSQL container to use RDS instead
+### 4. Application Optimizations
+- **Connection Pooling**: Limited maximum pool size to 5 connections
+- **Hibernate Optimizations**: Disabled statistics generation and enabled batch processing
+- **Thymeleaf Cache**: Enabled template caching to reduce CPU usage
+- **Logging**: Reduced logging levels to minimize CloudWatch costs
+- **Health Checks**: Optimized health check frequency to reduce API calls
 
-### 5. Monitoring and Management
-- Enhanced monitoring script to check Free Tier resource usage
-- Added detailed error handling and region specification
-- Added sandbox mode detection for SES
-- Improved cleanup script for removing all AWS resources
-
-### 6. Bug Fixes
-- Fixed EmailRequestDTO to use List<String> for recipients instead of a single String
-- Updated StandardEmailService to handle multiple recipients
-- Added proper error handling in AWS SES service
-- Fixed credential handling in AWS services to support instance profiles
+### 5. AWS SES Configuration
+- **Instance Profile**: Created IAM role for SES access
+- **Email Verification**: Added automatic email verification during deployment
+- **Sandbox Mode**: Improved handling of SES sandbox mode limitations
 
 ## Deployment Files
 
-The following files were updated or created:
+### .ebextensions Configuration
+Created the following configuration files:
+1. **01_environment.config**: Basic environment settings
+2. **02_aws_resources.config**: AWS resources and permissions
+3. **03_database.config**: Database connection settings
+4. **04_container_commands.config**: Setup commands
 
-1. **Dockerrun.aws.json** - Optimized for Free Tier with reduced memory and removed local PostgreSQL
-2. **.ebextensions/01_jvm_options.config** - Added JVM optimization settings
-3. **.ebextensions/02_aws_resources.config** - Added IAM permissions for SES
-4. **deploy-free-tier.sh** - Script for deploying to AWS Free Tier
-5. **cleanup-free-tier.sh** - Script for removing all AWS resources
-6. **monitor-free-tier.sh** - Enhanced script for monitoring Free Tier usage
-7. **init-db/setup-rds-databases.sh** - Updated to include tenant preferences schema
+### Environment Configuration Files
+1. **env-config-minimal.json**: Optimized for free tier with minimal settings
+2. **env-config-optimized.json**: Updated to remove load balancer and use single instance
 
-## Service Updates
+### Monitoring
+Created **monitor-free-tier.sh** to track AWS free tier usage, including:
+- EC2 instance usage
+- RDS instance usage
+- ECR repository usage
+- Elastic Beanstalk environments
+- CloudWatch metrics
+- SES sending statistics
+- CloudWatch Logs usage
+- Cost Explorer data
 
-### Notification Service
-- Enhanced AWS SES integration with proper error handling
-- Added support for sandbox mode and email verification
-- Updated controller with verification endpoints
-- Fixed email recipient handling
+## Deployment Options
 
-### All Services
-- Optimized memory usage and JVM settings
-- Added database connection pooling optimizations
-- Configured for external RDS connection
+### 1. GitHub CI/CD
+- Updated GitHub Actions workflow to use SingleInstance environment type
+- Configured to use minimal environment settings
+- See **GITHUB_DEPLOYMENT_README.md** for detailed instructions
 
-## Deployment Instructions
+### 2. Manual Deployment
+- Updated manual deployment guide to specify single instance environment
+- Removed load balancer configuration from manual deployment steps
+- See **MANUAL_BEANSTALK_DEPLOYMENT.md** for detailed instructions
 
-To deploy the application to AWS Free Tier:
+## Cost Monitoring
 
-1. Run the `deploy-free-tier.sh` script
-2. Monitor usage with `monitor-free-tier.sh`
-3. When finished, clean up with `cleanup-free-tier.sh`
+After deployment, monitor your AWS costs regularly:
+1. Set up AWS Budget alerts to notify you if costs approach free tier limits
+2. Use the `monitor-free-tier.sh` script to check current usage
+3. Consider running the application only when needed during development
 
-For detailed deployment steps, refer to the `FREE_TIER_DEPLOYMENT.md` document. 
+## Important Notes
+
+- AWS Free Tier limits change over time. Always check the latest AWS Free Tier documentation.
+- The first 12 months of a new AWS account offer the most generous free tier benefits.
+- Some services may incur minimal charges even with these optimizations.
+- Monitor your usage regularly to avoid unexpected charges. 

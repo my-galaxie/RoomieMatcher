@@ -16,8 +16,13 @@
   },
   {
     "Namespace": "aws:elasticbeanstalk:environment",
+    "OptionName": "EnvironmentType",
+    "Value": "SingleInstance"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment",
     "OptionName": "LoadBalancerType",
-    "Value": "application"
+    "Value": "none"
   },
   {
     "Namespace": "aws:autoscaling:asg",
@@ -27,12 +32,12 @@
   {
     "Namespace": "aws:autoscaling:asg",
     "OptionName": "MaxSize",
-    "Value": "2"
+    "Value": "1"
   },
   {
     "Namespace": "aws:elasticbeanstalk:healthreporting:system",
     "OptionName": "SystemType",
-    "Value": "enhanced"
+    "Value": "basic"
   },
   {
     "Namespace": "aws:elasticbeanstalk:environment:process:default",
@@ -47,16 +52,16 @@
   {
     "Namespace": "aws:elasticbeanstalk:command",
     "OptionName": "DeploymentPolicy",
-    "Value": "Rolling"
+    "Value": "AllAtOnce"
   },
   {
-    "Namespace": "aws:elasticbeanstalk:command",
-    "OptionName": "BatchSizeType",
-    "Value": "Percentage"
+    "Namespace": "aws:ec2:instances",
+    "OptionName": "EnableSpot",
+    "Value": "true"
   },
   {
-    "Namespace": "aws:elasticbeanstalk:command",
-    "OptionName": "BatchSize",
-    "Value": "30"
+    "Namespace": "aws:ec2:instances",
+    "OptionName": "SpotMaxPrice",
+    "Value": "0.0035"
   }
 ] 

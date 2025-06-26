@@ -7,15 +7,25 @@ spring:
   application:
     name: notification-service
   datasource:
-    url: jdbc:postgresql://${SPRING_DATASOURCE_URL:localhost:5432/roomie_notification}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/roomie_notification}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        generate_statistics: false
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -28,7 +38,7 @@ spring:
           starttls:
             enable: true
   thymeleaf:
-    cache: false
+    cache: true
     prefix: classpath:/templates/email/
     suffix: .html
     mode: HTML
@@ -56,8 +66,12 @@ springdoc:
 # Logging
 logging:
   level:
-    root: INFO
-    com.roomiematcher: DEBUG
+    root: WARN
+    com.roomiematcher: INFO
+    org.springframework: WARN
+  file:
+    max-size: 10MB
+    max-history: 3
 
 jwt:
   secret: ${JWT_SECRET:your_jwt_secret_key_here}
@@ -66,7 +80,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info
   endpoint:
     health:
-      show-details: always 
+      show-details: when_authorized 

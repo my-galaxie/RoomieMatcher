@@ -7,25 +7,35 @@ spring:
   application:
     name: match-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/roomie_match
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/roomie_match}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        generate_statistics: false
+    show-sql: false
   flyway:
-    locations: classpath:db/migration
+    enabled: true
     baseline-on-migrate: true
+    locations: classpath:db/migration
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:YourJwtSecretKeyHereMakeThisLongEnoughForSecurity}
-  expiration: 86400000 # 24 hours
+  secret: ${JWT_SECRET:your_jwt_secret_key_here}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours
 
 # Service endpoints for Feign clients
 services:
@@ -35,13 +45,26 @@ services:
 # OpenAPI Configuration
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+    operationsSorter: method
 
 # Logging
 logging:
   level:
-    com.roomiematcher: DEBUG
-    org.springframework.web: INFO
-    org.hibernate: ERROR 
+    root: WARN
+    com.roomiematcher: INFO
+    org.springframework: WARN
+  file:
+    max-size: 10MB
+    max-history: 3
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized 

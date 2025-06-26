@@ -67,6 +67,7 @@ public class MatchService {
 
         // Remove the user's own profile
         allProfiles = allProfiles.stream()
+                .filter(profile -> !profile.getUserId().equals(userId))
                 .collect(Collectors.toList());
 
         List<MatchDTO> potentialMatches = new ArrayList<>();

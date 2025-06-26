@@ -7,7 +7,7 @@ spring:
   application:
     name: profile-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/profile_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/roomie_profile}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -27,6 +27,7 @@ spring:
 jwt:
   secret: ${JWT_SECRET:your_jwt_secret_key_here}
 
+# OpenAPI configuration
 springdoc:
   api-docs:
     path: /api-docs
@@ -44,12 +45,4 @@ services:
   auth-service:
     url: http://localhost:8081
   notification-service:
-    url: http://localhost:8084
-
-# OpenAPI configuration
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operationsSorter: method 
+    url: http://localhost:8084 
